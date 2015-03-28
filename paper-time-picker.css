@@ -1,0 +1,57 @@
+:host {
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  color: #757575;
+  font-size: 14px;
+  border-radius: 5px;
+}
+
+/** Horizontal ******************/
+#timePicker {
+  width: 540px;
+  height: 240px;
+}
+#heading { 
+  width: 270px;
+  height: 240px;
+}
+
+/** Narrow *********************/
+:host([narrow]) #timePicker {
+  width: 270px;
+  height: 366px;
+}
+:host([narrow]) #heading {
+  height: 96px;
+}
+
+/** Heading ********************/
+#heading {
+  color: #8acfc8;
+  background: #009688;
+}
+#heading .time {
+  font-size: 0;
+  width: 172px;
+  text-align: right;
+}
+#heading .time .core-selected {
+  color: #fff; 
+  font-weight: normal;
+}
+#heading .time .period,
+#heading .time .core-selected.period {
+  font-size: 20px;
+  font-weight: 500;
+}
+#heading .time div {
+  cursor: pointer;
+  font-size: 50px;
+  display: inline-block;
+  padding: 2px;
+}
+
+/** Clock **********************/
+#pages {
+  background: #ccc;
+}

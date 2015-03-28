@@ -1,0 +1,33 @@
+{
+  "name": "paper-time-picker",
+  "version": "0.1.0",
+  "authors": [
+    "Ben Davis <bendavis78@gmail.com>"
+  ],
+  "description": "Polymer element that represents a complex entity such as a calendar event or a contact.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "datepicker",
+    "paper-time-picker"
+  ],
+  "main": "paper-time-picker.html",
+  "license": "MIT",
+  "homepage": "http://bendavis78.github.io/paper-time-picker/components/paper-time-picker/index.html",
+  "ignore": [
+    "/.*",
+    "/tests/"
+  ],
+  "dependencies": {
+    "moment": "~2.8.3",
+    "polymer": "Polymer/polymer#0.5.4",
+    "webcomponents": "Polymer/webcomponentsjs#0.5.4",
+    "core-list": "Polymer/core-item#0.5.4",
+    "core-media-query": "Polymer/core-media-query#0.5.4",
+    "core-animated-pages": "Polymer/core-animated-pages#0.5.4"
+  },
+  "devDependencies": {
+    "web-component-tester": "Polymer/web-component-tester#^0.7.3"
+  }
+}

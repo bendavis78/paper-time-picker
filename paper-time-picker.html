@@ -1,0 +1,39 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-media-query/core-media-query.html">
+<link rel="import" href="../core-animated-pages/core-animated-pages.html">
+<link rel="import" href="../core-selector/core-selector.html">
+
+<script src="date-utils.js"></script>
+
+<!--
+Material Design [Pickers](http://www.google.com/design/spec/components/pickers.html)
+
+Provides a responsive time picker based on the material design spec. This
+component aims to be a clone of the time picker found on Google Calendar for
+Android. 
+-->
+
+<polymer-element name="paper-time-picker" attributes="hour minute format responsiveWidth forceNarrow">
+  <template>
+    <link rel="stylesheet" href="paper-time-picker.css">
+    <core-media-query query="max-width: {{forceNarrow ? '' : responsiveWidth}}" queryMatches="{{narrow}}"></core-media-query>
+    <div id="timePicker" layout vertical?="{{narrow}}" horizontal?="{{!narrow}}">
+      <div id="heading" layout horizontal center center-justified>
+        <core-selector id="timePartSelector" target="{{$.timeParts}}" 
+          itemsSelector="[name]" on-core-select="{{selectTimePart}}"></core-selector>
+        <div class="time" id="timeParts">
+          <div name="hour" class="hour">{{hourDisplay}}</div>
+          <div class="sep">:</div>
+          <div name="minute" class="minute">{{minuteDisplay}}</div>
+          <div class="period" self-end on-tap="{{changePeriod}}">{{period}}</div>
+        </div>
+      </div>
+      <core-animated-pages selectedProperty="active" transitions="scale-up" id="pages" notap relative>
+        <section name="hour" id="chooseHour" fit class="noscroll-inner">HOUR: {{hour}}</section>
+        <section name="minute" id="chooseMinute" fit class="noscroll-inner">MINUTE: {{minute}}</section>
+      </core-animated-pages>
+    </div>
+  </template>
+</polymer-element>
+
+<script src="paper-time-picker.js"></script>
