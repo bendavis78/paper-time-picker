@@ -1,6 +1,7 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-media-query/core-media-query.html">
 <link rel="import" href="../core-animated-pages/core-animated-pages.html">
+<link rel="import" href="../core-animated-pages/transitions/scale-up.html">
 <link rel="import" href="../core-selector/core-selector.html">
 
 <script src="date-utils.js"></script>
@@ -28,9 +29,24 @@ Android.
           <div class="period" self-end on-tap="{{changePeriod}}">{{period}}</div>
         </div>
       </div>
+      <template id="clockTpl">
+        <svg class="clock" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <circle class="face" r="98" cx="98" cy="98"></circle>
+          <circle class="selection" r="15" cx="{{selection.x}}" cy="{{selection.y}}"></circle>
+          <circle class="dot" r="1" cx="98" cy="98"></circle>
+          <line class="line" x1="98" y1="98" x2="{{selection.lineX}}" y2="{{selection.lineY}}"></line>
+          <template repeat="{{n in numbers}}">
+            <text class="number" x="{{n.x}}" y="{{n.y}}" type="{{type}}" on-tap="{{selectClockNumber}}">{{n.number}}</text>
+          </template>
+        </svg>
+      </template>
       <core-animated-pages selectedProperty="active" transitions="scale-up" id="pages" notap relative>
-        <section name="hour" id="chooseHour" fit class="noscroll-inner">HOUR: {{hour}}</section>
-        <section name="minute" id="chooseMinute" fit class="noscroll-inner">MINUTE: {{minute}}</section>
+        <section name="hour" id="chooseHour" fit class="noscroll-inner" scale-up>
+          <template bind ref="clockTpl" id="hoursClock"></template>
+        </section>
+        <section name="minute" id="chooseMinute" fit class="noscroll-inner" scale-up>
+          <template bind ref="clockTpl" id="minutesClock"></template>
+        </section>
       </core-animated-pages>
     </div>
   </template>

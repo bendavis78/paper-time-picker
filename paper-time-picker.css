@@ -55,3 +55,40 @@
 #pages {
   background: #ccc;
 }
+#pages section {
+  padding: 10px;
+  width: 250px;
+}
+
+svg.clock {
+  display: block;
+  margin: 0 auto;
+  width: 196px;
+  height: 196px;
+}
+svg.clock .face {
+  fill: #dfdfdf;
+}
+svg.clock .selection {
+  fill: #b9d9d6;
+}
+svg.clock .dot,
+svg.clock .number {
+  fill: #757575;
+}
+svg.clock .line {
+  stroke: #b9d9d6; 
+}
+svg.clock .number {
+  font-size: 18px;
+  text-align: center;
+  text-anchor: middle;
+  cursor: pointer;
+  dominant-baseline: middle;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
