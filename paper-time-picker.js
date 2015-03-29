@@ -48,6 +48,10 @@
       var num = parseInt(el.textContent);
       var type = el.getAttribute('type');
       if (type == CLOCK_TYPE_HOURS) {
+        num = num == 12 ? 0 : num;
+        if (this.period == 'PM') {
+          num += 12;
+        }
         this.hour = num;
       } else if (type == CLOCK_TYPE_MINUTES) {
         this.minute = num;
@@ -57,7 +61,8 @@
       this.hourDisplay = this.hour % 12 == 0 ? 12 : this.hour % 12
       this.period = ['AM', 'PM'][Math.floor(this.hour / 12) % 2]
       var model = this.$.hoursClock.model;
-      model.selection = model.numbers[this.period == 'AM' ? this.hour : 12 - this.hour]
+      //console.log(this.period == 'AM' ? this.hour : this.hour - 12);
+      model.selection = model.numbers[this.period == 'AM' ? this.hour : this.hour - 12]
     },
     minuteChanged: function() {
       var model = this.$.minutesClock.model;
@@ -73,6 +78,15 @@
       } else if (this.period == 'PM') {
         this.hour -= 12;
       }
+    },
+    choosePeriod: function() {
+      var selected = this.$.periodSelector.selected;
+      if (selected == 'AM' && this.period == 'PM') {
+        this.hour -= 12;
+      } else if (selected == 'PM' && this.period == 'AM') {
+        this.hour += 12;
+      }
+      console.log(this.hour);
     },
   });
 })();

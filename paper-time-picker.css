@@ -4,6 +4,12 @@
   color: #757575;
   font-size: 14px;
   border-radius: 5px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /** Horizontal ******************/
@@ -52,12 +58,13 @@
 }
 
 /** Clock **********************/
-#pages {
-  background: #ccc;
-}
-#pages section {
+#clock {
+  background: #eee;
   padding: 10px;
-  width: 250px;
+}
+#pages {
+  width: 196px;
+  height: 196px;
 }
 
 svg.clock {
@@ -85,10 +92,23 @@ svg.clock .number {
   text-anchor: middle;
   cursor: pointer;
   dominant-baseline: middle;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+}
+
+/** Period chooser *************/
+#choosePeriod {
+  width: 190px;
+}
+#choosePeriod .period {
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  border-radius: 18px;
+  text-align: center;
+  vertical-align: middle;
+  top: 0;
+}
+
+#choosePeriod [active] {
+  background: #b9d9d6;
 }
