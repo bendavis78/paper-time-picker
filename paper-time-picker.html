@@ -39,7 +39,7 @@ Android.
           <template id="clockTpl">
             <svg class="clock" version="1.1" xmlns="http://www.w3.org/2000/svg" touch-action="none">
               <circle class="face" r="{{clock.radius}}" cx="{{clock.radius}}" cy="{{clock.radius}}" 
-                on-down="{{selectClockPosition}}" on-track="{{startClockSelect}}" on-up="{{finishClockSelect}}"></circle>
+                on-down="{{startClockSelect}}" on-track="{{startClockSelect}}" on-up="{{finishClockSelect}}"></circle>
               <g class="numbers" on-track="{{dragSelector}}">
                 <g class="pointer {{{visible: selected.visible, selected: selected} | tokenList}}">
                   <circle class="dot" r="1" cx="{{clock.radius}}" cy="{{clock.radius}}"></circle>
