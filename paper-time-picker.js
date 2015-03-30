@@ -160,6 +160,9 @@
       }
     },
     finishClockSelect: function() {
+      if (!this._startClockSelect) {
+        return;
+      }
       if (this.page == 'hour') {
         this.page = 'minute';
       }
