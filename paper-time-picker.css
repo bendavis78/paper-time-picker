@@ -79,7 +79,7 @@ svg.clock .face {
   fill: #dfdfdf;
 }
 svg.clock .number {
-  fill: none;
+  fill: rgba(0,0,0,0);
 }
 svg.clock .lineA {
   stroke: #b9d9d6; 
@@ -109,9 +109,9 @@ svg.clock .number text {
   text-align: center;
   text-anchor: middle;
 }
-svg.clock .tap-area {
+svg.clock .select-area {
   cursor: pointer;
-  fill: rgba(0,0,0,0);
+  fill-opacity: 0;
 }
 
 /** Clock transition ***********/

@@ -38,8 +38,7 @@ Android.
         <core-animated-pages selectedProperty="active" id="clockFace" notap flex>
           <template id="clockTpl">
             <svg class="clock" version="1.1" xmlns="http://www.w3.org/2000/svg" touch-action="none">
-              <circle class="face" r="{{clock.radius}}" cx="{{clock.radius}}" cy="{{clock.radius}}" 
-                on-down="{{startClockSelect}}" on-track="{{startClockSelect}}" on-up="{{finishClockSelect}}"></circle>
+              <circle class="face" r="{{clock.radius}}" cx="{{clock.radius}}" cy="{{clock.radius}}"></circle>
               <g class="numbers" on-track="{{dragSelector}}">
                 <g class="pointer {{{visible: selected.visible, selected: selected} | tokenList}}">
                   <circle class="dot" r="1" cx="{{clock.radius}}" cy="{{clock.radius}}"></circle>
@@ -59,7 +58,7 @@ Android.
                     </template>
                   </g>
                 </template>
-              </g>
+                </g>
               <g id="choosePeriod">
                 <g class="period" value="AM" on-tap="{{selectPeriod}}" active?="{{clock.period == 'AM'}}">
                   <circle r="{{clock.periodChooser/2}}" cx="{{clock.periodChooser/2}}" cy="{{clock.radius * 1.95}}"></circle>
@@ -70,6 +69,16 @@ Android.
                   <text x="{{(clock.radius * 2) - (clock.periodChooser/2)}}" y="{{clock.radius * 1.95}}">PM</text>
                 </g>
               </g>
+              <!-- defines the area in which a number can be selected -->
+              <path class="select-area" on-down="{{startClockSelect}}" on-track="{{startClockSelect}}" on-up="{{finishClockSelect}}"
+                  d="
+                  M {{clock.radius - clock.r1}} {{ clock.radius }}
+                  A {{clock.r1}} {{clock.r1}} 0 0 0 {{clock.radius + clock.r1}} {{ clock.radius }}
+                  A {{clock.r1}} {{clock.r1}} 0 0 0 {{clock.radius - clock.r1}} {{ clock.radius }}
+                  M {{clock.radius - clock.r3}} {{ clock.radius }}
+                  A {{clock.r3}} {{clock.r3}} 0 0 1 {{clock.radius + clock.r3}} {{ clock.radius }}
+                  A {{clock.r3}} {{clock.r3}} 0 0 1 {{clock.radius - clock.r3}} {{ clock.radius }}
+              "></path>
             </svg>
           </template>
           <section name="hour" id="chooseHour" animate>

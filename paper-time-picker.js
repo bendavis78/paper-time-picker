@@ -127,16 +127,17 @@
       this.vibrate();
     },
     startClockSelect: function(e) {
-      this._startClockSelect = true;
       var clock = this.clock;
       var page = this.page;
       var r = clock.radius;
       var x = e.clientX - clock.rect.left - r;
       var y = e.clientY - clock.rect.top - r;
       var distance = Math.abs(Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)));
-      if (distance < clock.r3 || distance > r) {
+      if (distance < clock.r3 || distance > clock.r1) {
+        this._startClockSelect = false;
         return;
       }
+      this._startClockSelect = true;
       var points = this.page == 'minute' ? 60 : 12;
       var interval = (360 / points) * (Math.PI / 180);
 
@@ -162,6 +163,7 @@
       if (this.page == 'hour') {
         this.page = 'minute';
       }
+      this._startClockSelect = false;
     },
     pageChanged: function() {
       this.$.timePartSelector.selected = this.page;
