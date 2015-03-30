@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <style>
+      body {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+      }
+      div {
+        border: 1px solid black;
+        width: 100px;
+        height: 100px;
+        margin: 10px;
+        border-radius: 50px;
+        background-color: rgba(255, 0, 0, .8);
+
+        transition: transform 500ms, opacity 500ms;
+        
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      div:hover {
+        opacity: 0;
+        transform: scale(2);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="test1">
+    </div>
+    <div id="test2">
+    </div>
+  </body>
+</html>

@@ -2,6 +2,7 @@
   -webkit-font-smoothing: antialiased;
   display: inline-block;
   color: #757575;
+  background: #eeeeee;
   font-size: 14px;
   border-radius: 5px;
   -webkit-touch-callout: none;
@@ -14,12 +15,15 @@
 
 /** Horizontal ******************/
 #timePicker {
-  width: 540px;
+  width: 520px;
   height: 240px;
 }
 #heading { 
   width: 270px;
   height: 240px;
+}
+#clock {
+  margin: 12px 22px;
 }
 
 /** Narrow *********************/
@@ -29,6 +33,9 @@
 }
 :host([narrow]) #heading {
   height: 96px;
+}
+:host([narrow]) #clock {
+  margin: 10px 18px;
 }
 
 /** Heading ********************/
@@ -57,58 +64,94 @@
   padding: 2px;
 }
 
-/** Clock **********************/
+/** Clock *********************/
 #clock {
-  background: #eee;
-  padding: 10px;
+  position: relative;
 }
-#pages {
-  width: 196px;
-  height: 196px;
-}
-
 svg.clock {
   display: block;
   margin: 0 auto;
-  width: 196px;
-  height: 196px;
+  overflow: visible;
+  width: 100%;
+  height: 100%;
 }
 svg.clock .face {
   fill: #dfdfdf;
 }
-svg.clock .selection {
-  fill: #b9d9d6;
-}
-svg.clock .dot,
 svg.clock .number {
-  fill: #757575;
+  fill: none;
 }
-svg.clock .line {
+svg.clock .lineA {
   stroke: #b9d9d6; 
 }
-svg.clock .number {
+svg.clock .pointer-large {
+  fill: #b9d9d6;
+}
+svg.clock .lineB {
+  stroke: #009688;
+}
+svg.clock .pointer-small {
+  fill: #009688;
+}
+svg.clock .pointer.visible .lineB,
+svg.clock .pointer.visible .pointer-small {
+  fill: none;
+  stroke: none;
+}
+svg.clock .dot,
+svg.clock .number text {
+  fill: #757575;
+}
+svg.clock .number text {
   font-size: 18px;
+  dominant-baseline: middle;
   text-align: center;
   text-anchor: middle;
+}
+svg.clock .tap-area {
   cursor: pointer;
-  dominant-baseline: middle;
+  fill: rgba(0,0,0,0);
 }
 
+/** Clock transition ***********/
+section {
+  z-index: 0;
+}
+svg.clock .numbers {
+  transition: transform 500ms, opacity 500ms;
+  transform: scale(1.2);
+  transform-origin: 50% 50%;
+  opacity: 0;
+}
+svg.clock .face {
+  transition: opacity 500ms step-end;
+  opacity: 0;
+}
+section.core-selected {
+  z-index: 1000;
+}
+section.core-selected svg.clock .face {
+  opacity: 1;
+}
+section.core-selected svg.clock .numbers {
+  transform: scale(1);
+  opacity: 1;
+}
 /** Period chooser *************/
-#choosePeriod {
-  width: 190px;
-}
-#choosePeriod .period {
+#choosePeriod .period circle {
   cursor: pointer;
-  width: 36px;
-  height: 36px;
-  line-height: 36px;
-  border-radius: 18px;
+  fill-opacity: 0;
+}
+#choosePeriod .period text {
+  cursor: pointer;
+  fill: #757575;
+  font-size: 14px;
+  dominant-baseline: middle;
   text-align: center;
-  vertical-align: middle;
-  top: 0;
+  text-anchor: middle;
 }
 
-#choosePeriod [active] {
-  background: #b9d9d6;
+#choosePeriod .period[active] circle {
+  fill: #b9d9d6;
+  fill-opacity: 1;
 }
