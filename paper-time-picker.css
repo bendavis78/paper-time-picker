@@ -103,6 +103,7 @@ svg.clock .number text {
   fill: #757575;
 }
 svg.clock .number text {
+  pointer-events: none;
   font-size: 18px;
   dominant-baseline: middle;
   text-align: center;
@@ -143,7 +144,7 @@ section.core-selected svg.clock .numbers {
   fill-opacity: 0;
 }
 #choosePeriod .period text {
-  cursor: pointer;
+  pointer-events: none;
   fill: #757575;
   font-size: 14px;
   dominant-baseline: middle;
@@ -154,4 +155,10 @@ section.core-selected svg.clock .numbers {
 #choosePeriod .period[active] circle {
   fill: #b9d9d6;
   fill-opacity: 1;
+}
+
+#test {
+  background: red;
+  width: 100px;
+  height: 100px;
 }

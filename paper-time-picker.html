@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer-gestures/polymer-gestures.html">
 <link rel="import" href="../core-media-query/core-media-query.html">
 <link rel="import" href="../core-animated-pages/core-animated-pages.html">
 <link rel="import" href="../core-selector/core-selector.html">
@@ -19,6 +20,8 @@ Android.
 
     <core-media-query query="max-width: {{forceNarrow ? '' : responsiveWidth}}" 
         queryMatches="{{narrow}}"></core-media-query>
+    <core-media-query query="max-width: {{forceNarrow ? '' : responsiveWidth}}" 
+        queryMatches="{{narrow}}"></core-media-query>
     <core-selector id="timePartSelector" target="{{$.timeParts}}" itemsSelector="[name]" 
         on-core-select="{{selectTimePart}}"></core-selector>
     
@@ -34,51 +37,40 @@ Android.
       <div id="clock" flex layout vertical>
         <core-animated-pages selectedProperty="active" id="clockFace" notap flex>
           <template id="clockTpl">
-
-            <svg class="clock" version="1.1" xmlns="http://www.w3.org/2000/svg">
-              <circle class="face" r="{{radius}}" cx="{{radius}}" cy="{{radius}}"></circle>
-              <g class="numbers">
+            <svg class="clock" version="1.1" xmlns="http://www.w3.org/2000/svg" touch-action="none">
+              <circle class="face" r="{{clock.radius}}" cx="{{clock.radius}}" cy="{{clock.radius}}" 
+                on-down="{{selectClockPosition}}" on-track="{{startClockSelect}}" on-up="{{finishClockSelect}}"></circle>
+              <g class="numbers" on-track="{{dragSelector}}">
                 <g class="pointer {{{visible: selected.visible, selected: selected} | tokenList}}">
-                  <circle class="dot" r="1" cx="{{radius}}" cy="{{radius}}"></circle>
-                  <circle class="pointer-large" r="{{pointerLarge/2}}" 
+                  <circle class="dot" r="1" cx="{{clock.radius}}" cy="{{clock.radius}}"></circle>
+                  <circle class="pointer-large" r="{{clock.pointerLarge/2}}" 
                       cx="{{selected.x}}" cy="{{selected.y}}"></circle>
-                  <circle class="pointer-small" r="{{pointerSmall/2}}" 
+                  <circle class="pointer-small" r="{{clock.pointerSmall/2}}" 
                       cx="{{selected.x}}" cy="{{selected.y}}"></circle>
-                  <line class="lineA" x1="{{radius}}" y1="{{radius}}" 
+                  <line class="lineA" x1="{{clock.radius}}" y1="{{clock.radius}}" 
                       x2="{{selected.edge.x}}" y2="{{selected.edge.y}}"></line>
                   <line class="lineB" x1="{{selected.edge.x}}" y1="{{selected.edge.y}}" 
                       x2="{{selected.x}}" y2="{{selected.y}}"></line>
                 </g>
                 <template repeat="{{n in numbers}}">
-                  <g class="number" type="{{type}}" value="{{n.number}}" on-tap="{{selectClockNumber}}">
+                  <g class="number" type="{{type}}" value="{{n.number}}">
                     <template if="{{n.visible}}">
                       <text x="{{n.x}}" y="{{n.y}}">{{n.numberDisplay}}</text>
                     </template>
-                    <path class="tap-area" d="
-                        M {{n.t1.x}},{{n.t1.y}} 
-                        A {{radius}},{{radius}} 0 0,1 {{n.t2.x}},{{n.t2.y}} 
-                        L {{n.t3.x}},{{n.t3.y}} 
-                        A {{radius}},{{radius}} 0 0,0 {{n.t4.x}},{{n.t4.y}} 
-                        Z"></path>
                   </g>
                 </template>
               </g>
-
-              <core-selector id="periodSelector" target="{{$.choosePeriod}}" itemSelector="[name]" 
-                  on-core-select="{{selectPeriod}}"></core-selector>
-
               <g id="choosePeriod">
-                <g class="period" name="AM">
-                  <circle r="{{periodChooser/2}}" cx="{{periodChooser/2}}" cy="{{radius * 1.95}}"></circle>
-                  <text x="{{periodChooser/2}}" y="{{radius * 1.95}}">AM</text>
+                <g class="period" value="AM" on-tap="{{selectPeriod}}" active?="{{clock.period == 'AM'}}">
+                  <circle r="{{clock.periodChooser/2}}" cx="{{clock.periodChooser/2}}" cy="{{clock.radius * 1.95}}"></circle>
+                  <text x="{{clock.periodChooser/2}}" y="{{clock.radius * 1.95}}">AM</text>
                 </g>
-                <g class="period" name="PM">
-                  <circle r="{{periodChooser/2}}" cx="{{(radius * 2) - (periodChooser/2)}}" cy="{{radius * 1.95}}"></circle>
-                  <text x="{{(radius * 2) - (periodChooser/2)}}" y="{{radius * 1.95}}">PM</text>
+                <g class="period" value="PM" on-tap="{{selectPeriod}}" active?="{{clock.period == 'PM'}}">
+                  <circle r="{{clock.periodChooser/2}}" cx="{{(clock.radius * 2) - (clock.periodChooser/2)}}" cy="{{clock.radius * 1.95}}"></circle>
+                  <text x="{{(clock.radius * 2) - (clock.periodChooser/2)}}" y="{{clock.radius * 1.95}}">PM</text>
                 </g>
               </g>
             </svg>
-
           </template>
           <section name="hour" id="chooseHour" animate>
             <template bind ref="clockTpl" id="hoursClock"></template>
@@ -89,8 +81,8 @@ Android.
         </core-animated-pages>
       </div>
     </div>
-
   </template>
+
 </polymer-element>
 
 <script src="paper-time-picker.js"></script>
