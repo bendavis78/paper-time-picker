@@ -5,7 +5,7 @@
   // these values are a percentage of the radius
   var POINTER_LARGE = 32;
   var POINTER_SMALL = 8;
-  var CLOCK_FACE_PADDING = 8;
+  var CLOCK_FACE_PADDING = 4;
   var PERIOD_CHOOSER = 36;
 
   Polymer("paper-time-picker", {
