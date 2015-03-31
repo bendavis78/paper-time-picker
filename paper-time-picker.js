@@ -16,8 +16,8 @@
       narrow: {type: 'boolean', value: false, reflect: true},
       isTouch: {type: 'boolean', value: false, reflect: true}
     },
-    observe: {
-      '$.clockFace.selected': 'pageChanged'
+    eventDelegates: {
+      down: '_down',
     },
     ready: function() {
       this.isTouch = 'ontouchstart' in window;
@@ -124,7 +124,6 @@
         this.minute = num;
       }
       this.page = 'minute';
-      this.vibrate();
     },
     startClockSelect: function(e) {
       var clock = this.clock;
@@ -158,6 +157,8 @@
         }
         this[this.page] = value;
       }
+
+      this._allowVibrate = true;
     },
     finishClockSelect: function() {
       if (!this._startClockSelect) {
@@ -171,6 +172,7 @@
     pageChanged: function() {
       this.$.timePartSelector.selected = this.page;
       this.$.clockFace.selected = this.page;
+      this.vibrate();
     },
     hourChanged: function() {
       this.hourDisplay = this.hour % 12 == 0 ? 12 : this.hour % 12
@@ -178,18 +180,20 @@
       var model = this.$.hoursClock.model;
       var idx = this.period == 'AM' ? this.hour : this.hour - 12;
       model.selected = model.numbers[idx]
-    },
-    periodChanged: function() {
-      this.clock.period = this.period;
+      this.vibrate();
     },
     minuteChanged: function() {
       var model = this.$.minutesClock.model;
       model.selected = model.numbers[this.minute];
       this.minuteDisplay = ('0' + this.minute).substr(-2,2)
+      this.vibrate();
+    },
+    periodChanged: function() {
+      this.clock.period = this.period;
+      this.vibrate();
     },
     selectTimePart: function() {
       this.page = this.$.timePartSelector.selected;
-      this.vibrate();
     },
     changePeriod: function() {
       if (this.period == 'AM') {
@@ -208,9 +212,16 @@
         }
       });
     },
+    _down: function() {
+      // only vibrate when something is changed by a touch action
+      this._allowVibrate = true;
+    },
     vibrate: function() {
-      if (navigator.vibrate) {
-        navigator.vibrate(100);
+      if (this._allowVibrate) {
+        this.job('vibrate', function() {
+          navigator.vibrate && navigator.vibrate(10);
+          this._allowVibrate = false;
+        });
       }
     }
   });

@@ -1,3 +1,6 @@
+:host /deep/ * {
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
 :host {
   -webkit-font-smoothing: antialiased;
   display: inline-block;
@@ -58,10 +61,12 @@
   font-weight: 500;
 }
 #heading .time div {
-  cursor: pointer;
   font-size: 50px;
   display: inline-block;
   padding: 2px;
+}
+#heading .time div:hover {
+  cursor: pointer;
 }
 
 /** Clock *********************/
@@ -110,8 +115,10 @@ svg.clock .number text {
   text-anchor: middle;
 }
 svg.clock .select-area {
-  cursor: pointer;
   fill-opacity: 0;
+}
+svg.clock .select-area:hover {
+  cursor: pointer;
 }
 
 /** Clock transition ***********/
@@ -140,8 +147,10 @@ section.core-selected svg.clock .numbers {
 }
 /** Period chooser *************/
 #choosePeriod .period circle {
-  cursor: pointer;
   fill-opacity: 0;
+}
+#choosePeriod .period circle:hover {
+  cursor: pointer;
 }
 #choosePeriod .period text {
   pointer-events: none;
