@@ -20,11 +20,12 @@
     }
     body {
       font-size: 14px;
-      padding: 24px;
+    }
+    section {
+      margin: 24px;
     }
     html /deep/ paper-action-dialog {
       background: #eee;
-      border-radius: 10px;
     }
     html /deep/ paper-action-dialog paper-button {
       color: #009688;
@@ -32,38 +33,34 @@
     }
     html /deep/ paper-action-dialog::shadow #scroller {
       padding: 0;
+      border-radius: 4px 4px 0 0;
     }
-    html /deep/ paper-action-dialog::shadow #scroller,
-    html /deep/ paper-action-dialog::shadow paper-shadow {
-      border-top-left-radius: 4px;
-    }
-    html /deep/ paper-action-dialog::shadow #scroller,
-    html /deep/ paper-calendar::shadow #calendarList,
-    html /deep/ paper-action-dialog::shadow paper-shadow {
-      border-top-right-radius: 4px;
-    }
-    html /deep/ paper-action-dialog::shadow #actions,
-    html /deep/ paper-action-dialog::shadow paper-shadow {
-      border-bottom-left-radius: 4px;
-      border-bottom-right-radius: 4px;
+    html /deep/ #shadow-top,
+    html /deep/ #shadow-bottom,
+    html /deep/ paper-action-dialog {
+      border-radius: 4px !important;
     }
   </style>
 </head>
 <body unresolved>
-  <template is="auto-binding">
-    <button on-tap="{{chooseDate}}">Choose Time</button>
-    <paper-action-dialog>
+  <template is="auto-binding" id="scope">
+    <section>
       <paper-time-picker></paper-time-picker>
-      <paper-button affirmative>CANCEL</paper-button>
-      <paper-button affirmative>OK</paper-button>
-    </paper-action-dialog>
+    </section>
+    <section>
+      <button on-tap="{{chooseDate}}">Show dialog</button>
+      <paper-action-dialog id="dialog">
+        <paper-time-picker></paper-time-picker>
+        <paper-button affirmative>CANCEL</paper-button>
+        <paper-button affirmative>OK</paper-button>
+      </paper-action-dialog>
+    </section>
   </template>
   <script>
     (function() {
-      var $ = document.querySelector.bind(document);
-      var scope = $('template');
+      var scope = document.getElementById('scope');
       scope.chooseDate = function() {
-        $('paper-action-dialog').toggle();
+        this.$.dialog.toggle();
       };
     })();
   </script>

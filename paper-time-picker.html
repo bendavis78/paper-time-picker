@@ -2,6 +2,7 @@
 <link rel="import" href="../core-media-query/core-media-query.html">
 <link rel="import" href="../core-animated-pages/core-animated-pages.html">
 <link rel="import" href="../core-selector/core-selector.html">
+<link rel="import" href="../core-resizable/core-resizable.html">
 
 <!--
 Material Design [Pickers](http://www.google.com/design/spec/components/pickers.html)
@@ -45,6 +46,13 @@ Maximum screen width at which the picker uses a vertical layout
 @attribute responsiveWidth
 @type string
 @default '450px'
+-->
+
+<!--
+Force narrow layout
+@attribute forceNarrow
+@type boolean
+@default false
 -->
 
 <polymer-element name="paper-time-picker" attributes="hour minute responsiveWidth forceNarrow">

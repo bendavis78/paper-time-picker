@@ -8,7 +8,7 @@
   var CLOCK_FACE_PADDING = 4;
   var PERIOD_CHOOSER = 36;
 
-  Polymer("paper-time-picker", {
+  Polymer.mixin(Polymer.CoreResizable, Polymer("paper-time-picker", {
     publish: {
       hour: 0,
       minute: 0,
@@ -17,7 +17,8 @@
       isTouch: {type: 'boolean', value: false, reflect: true}
     },
     eventDelegates: {
-      down: '_down',
+      'down': '_down',
+      'core-resize': 'updateSize'
     },
     ready: function() {
       this.isTouch = 'ontouchstart' in window;
@@ -25,13 +26,13 @@
       this._initClock();
     },
     domReady: function() {
-      this._updateClockMetrics();
+      this.updateSize();
       this.hourChanged();
       this.minuteChanged();
     },
     narrowChanged: function() {
       this.async(function() {
-        this._updateClockMetrics();
+        this.updateSize();
       });
     },
     _initClock: function() {
@@ -68,7 +69,7 @@
         clock: clock
       };
     },
-    _updateClockMetrics: function() {
+    updateSize: function() {
       var clock = this.clock;
       var clockFace = this.$.clockFace;
       var radius = this.$.clockFace.offsetWidth / 2;
@@ -224,5 +225,5 @@
         });
       }
     }
-  });
+  }));
 })();
