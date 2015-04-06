@@ -16,16 +16,23 @@
 
   <style shim-shadowdom>
     html /deep/ * {
-      font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;
     }
     body {
+      font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;
       font-size: 14px;
+      color: #333;
     }
     section {
       margin: 24px;
     }
+    h1 {
+      font-size: 40px;
+      padding: 10px;
+    }
+
     html /deep/ paper-action-dialog {
       background: #eee;
+      margin: 10px;
     }
     html /deep/ paper-action-dialog paper-button {
       color: #009688;
@@ -45,24 +52,33 @@
 <body unresolved>
   <template is="auto-binding" id="scope">
     <section>
-      <paper-time-picker></paper-time-picker>
-    </section>
-    <section>
-      <button on-tap="{{chooseDate}}">Show dialog</button>
-      <paper-action-dialog id="dialog">
-        <paper-time-picker></paper-time-picker>
+      <h1>{{time}}</h1>
+      <paper-button class="btn" on-tap="{{chooseTime}}" raised>Change Time</paper-button>
+      <paper-action-dialog id="dialog" backdrop>
+        <paper-time-picker hour="{{hour}}" minute="{{minute}}" id="picker"></paper-time-picker>
         <paper-button affirmative>CANCEL</paper-button>
-        <paper-button affirmative>OK</paper-button>
+        <paper-button affirmative on-tap="{{timeSelected}}">OK</paper-button>
       </paper-action-dialog>
     </section>
   </template>
   <script>
-    (function() {
-      var scope = document.getElementById('scope');
-      scope.chooseDate = function() {
+    document.addEventListener('DOMContentLoaded', function() {
+      var scope = document.querySelector('#scope');
+      scope.updateTime = function(hour, minute) {
+        scope.hour = hour;
+        scope.minute = minute;
+        scope.time = (hour % 12 || 12) + ':' + ('0' + minute).substr(-2);
+        scope.time += ' ' + ['pm', 'am'][+(hour < 12)];
+      }
+      scope.timeSelected = function() {
+        var picker = document.querySelector('html /deep/ #picker');
+        scope.updateTime(picker.hour, picker.minute);
+      },
+      scope.chooseTime = function() {
         this.$.dialog.toggle();
       };
-    })();
+      scope.updateTime(15, 20);
+    });
   </script>
 </body>
 </html>

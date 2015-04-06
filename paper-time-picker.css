@@ -16,6 +16,10 @@
   user-select: none;
 }
 
+#timePicker {
+  height: 100%;
+}
+
 /** Horizontal ******************/
 :host {
   width: 520px;
