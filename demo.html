@@ -53,8 +53,8 @@
   <template is="auto-binding" id="scope">
     <section>
       <h1>{{time}}</h1>
-      <paper-button class="btn" on-tap="{{chooseTime}}" raised>Change Time</paper-button>
-      <paper-action-dialog id="dialog" backdrop>
+      <paper-button class="btn" on-tap="{{showDialog}}" raised>Change Time</paper-button>
+      <paper-action-dialog id="dialog" backdrop sizingTarget="{{$.picker}}">
         <paper-time-picker hour="{{hour}}" minute="{{minute}}" id="picker"></paper-time-picker>
         <paper-button affirmative>CANCEL</paper-button>
         <paper-button affirmative on-tap="{{timeSelected}}">OK</paper-button>
@@ -74,7 +74,7 @@
         var picker = document.querySelector('html /deep/ #picker');
         scope.updateTime(picker.hour, picker.minute);
       },
-      scope.chooseTime = function() {
+      scope.showDialog = function() {
         this.$.dialog.toggle();
       };
       scope.updateTime(15, 20);

@@ -21,6 +21,16 @@ Setting the initial time to 4:20pm (note that hours given as 24-hour):
 
     <paper-time-picker hour="16" minute="20"></paper-time-picker>
 
+If you include this element as part of a core-overlay dialog, make sure to set
+the `sizingTarget` attribute of that dialog to the time picker element. For
+example:
+
+    <paper-action-dialog id="dialog" backdrop sizingTarget="{{$.timePicker}}">
+      <paper-time-picker id="timePicker"></paper-time-picker>
+      <paper-button affirmative>OK</paper-button>
+    </paper-action-dialog>
+
+
 @element paper-time-picker
 @blurb Provides a responsive time picker based on the material design spec.
 @status alpha
