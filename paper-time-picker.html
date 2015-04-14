@@ -44,7 +44,7 @@ example:
     <link rel="stylesheet" href="paper-time-picker.css">
 
     <core-media-query query="max-width: {{forceNarrow ? '' : responsiveWidth}}" 
-        queryMatches="{{narrow}}"></core-media-query>
+        queryMatches="{{queryMatches}}"></core-media-query>
     <core-selector id="timePartSelector" target="{{$.timeParts}}" itemsSelector="[name]" 
         on-core-select="{{selectTimePart}}"></core-selector>
     
@@ -147,6 +147,13 @@ example:
          * @default '560px'
          */
         responsiveWidth: '560px',
+        /**
+         * Force narrow layout
+         * @attribute forceNarrow
+         * @type boolean
+         * @default false
+         */
+        forceNarrow: false,
         narrow: {type: 'boolean', value: false, reflect: true},
         isTouch: {type: 'boolean', value: false, reflect: true}
       },
@@ -334,6 +341,9 @@ example:
       periodChanged: function() {
         this.period = ['PM', 'AM'][+(this.hour < 12)]
         this.clock.period = this.period;
+      },
+      queryMatchesChanged: function() {
+        this.narrow = this.queryMatches || this.forceNarrow;
       },
       selectTimePart: function() {
         this.page = this.$.timePartSelector.selected;
