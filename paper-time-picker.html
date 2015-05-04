@@ -293,7 +293,6 @@ example:
               value += 12;
           }
           this[this.page] = value;
-          console.log(this.page, value);
         }
 
         this._allowVibrate = true;
@@ -357,12 +356,23 @@ example:
       changePeriod: function() {
         this.hour = (this.hour + 12) % 24;
       },
-      getFormattedTime: function() {
+      get time() {
         var hour = this.hour % 12 || 12;
-        var minute = ('0' + minute).substr(-2);
+        var minute = ('0' + this.minute).substr(-2);
         return hour + ':' + minute + ' ' + this.period;
       },
-      setTime: function(hour, minute) {
+      set time(timeString) {
+        var pattern = /^\s*(\d{1,2}):?(\d{2})(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/
+        var match = timeString.match(pattern);
+        if (!match) {
+          throw "Invalid time";
+        }
+        var hour = parseInt(match[1]);
+        var minute = parseInt(match[2]);
+        var period = match[4] ? match[4].toLowerCase() : null;
+        if (period == 'p' && hour <= 12) {
+          hour = (hour + 12) % 24;
+        }
         this.hour = hour;
         this.minute = minute;
       },
