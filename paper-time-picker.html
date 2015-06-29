@@ -1,11 +1,14 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../core-media-query/core-media-query.html">
-<link rel="import" href="../core-animated-pages/core-animated-pages.html">
-<link rel="import" href="../core-selector/core-selector.html">
-<link rel="import" href="../core-resizable/core-resizable.html">
+<link rel="import" href="../iron-media-query/iron-media-query.html">
+<link rel="import" href="../iron-resizable/iron-resizable-behavior.html">
+<link rel="import" href="../iron-selector/iron-selector.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="paper-clock-selector.html">
 
 <!--
-Material Design [Pickers](http://www.google.com/design/spec/components/pickers.html)
+
+[Material Design Pickers][1]
 
 Provides a responsive time picker based on the material design spec. This
 component aims to be a clone of the time picker introduced in Android Lollipop.
@@ -20,378 +23,223 @@ Setting the initial time to 4:20pm (note that hours given as 24-hour):
 
     <paper-time-picker hour="16" minute="20"></paper-time-picker>
 
-If you include this element as part of a core-overlay dialog, make sure to set
-the `sizingTarget` attribute of the dialog to the time picker element. For
-example:
+If you include this element as part of `paper-dialog`, use the class
+`"paper-time-picker-dialog"` on the dialog in order to give it proper styling.
 
-    <paper-action-dialog id="dialog" backdrop sizingTarget="{{$.timePicker}}">
+    <paper-action-dialog id="dialog" modal class="paper-time-picker-dialog">
       <paper-time-picker id="timePicker"></paper-time-picker>
-      <paper-button affirmative>OK</paper-button>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm>OK</paper-button>
+      </div>
     </paper-action-dialog>
-
 
 @element paper-time-picker
 @blurb Provides a responsive time picker based on the material design spec.
-@status alpha
 @homepage http://bendavis78.github.io/paper-time-picker/paper-time-picker/
 @demo http://bendavis78.github.io/paper-time-picker/paper-time-picker/demo.html
+
+[1]: (http://www.google.com/design/spec/components/pickers.html)
+
 -->
 
-<!--
--->
+<style is="custom-style">
+  /* Allow easy styling of paper-time-picker-dialog */
+  :root .paper-time-picker-dialog {
+    margin: 0;
+    max-height: 520px !important;
+  }
+  :root .paper-time-picker-dialog > paper-time-picker {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+  }
+</style>
 
-<polymer-element name="paper-time-picker" attributes="hour minute responsiveWidth forceNarrow">
+<dom-module id="paper-time-picker">
+  <link rel="import" type="css" href="paper-time-picker.css">
   <template>
-    <link rel="stylesheet" href="paper-time-picker.css">
-
-    <core-media-query query="max-width: {{forceNarrow ? '' : responsiveWidth}}" 
-        queryMatches="{{queryMatches}}"></core-media-query>
-    <core-selector id="timePartSelector" target="{{$.timeParts}}" itemsSelector="[name]" 
-        on-core-select="{{selectTimePart}}"></core-selector>
-    
-    <div id="timePicker" layout vertical?="{{narrow}}" horizontal?="{{!narrow}}">
-      <div id="heading" layout horizontal center center-justified>
-        <div class="time" id="timeParts">
-          <div name="hour" class="hour">{{hour % 12 || 12}}</div>
+    <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" query-matches="{{_queryMatches}}"></iron-media-query>
+    <div id="timePicker">
+      <div id="heading">
+        <iron-selector class="time" id="timeParts" selectable="[name]" attr-for-selected="name" selected="{{_page}}">
+          <div name="hour" class="hour">{{_twelveHour(hour)}}</div>
           <div class="sep">:</div>
-          <div name="minute" class="minute">{{minute | zeroPad(2) }}</div>
-          <div class="period" self-end on-tap="{{changePeriod}}">{{period}}</div>
-        </div>
+          <div name="minute" class="minute">{{_zeroPad(minute, 2)}}</div>
+          <div class="period" self-end on-tap="togglePeriod">{{period}}</div>
+        </iron-selector>
       </div>
-      <div id="clock" flex layout vertical>
-        <core-animated-pages selectedProperty="active" id="clockFace" notap flex>
-          <template id="clockTpl">
-            <svg class="clock" version="1.1" xmlns="http://www.w3.org/2000/svg" touch-action="none">
-              <circle class="face" r="{{clock.radius}}" cx="{{clock.radius}}" cy="{{clock.radius}}"></circle>
-              <g class="numbers" on-track="{{dragSelector}}">
-                <g class="pointer {{{visible: selected.visible, selected: selected} | tokenList}}">
-                  <circle class="dot" r="1" cx="{{clock.radius}}" cy="{{clock.radius}}"></circle>
-                  <circle class="pointer-large" r="{{clock.pointerLarge/2}}" 
-                      cx="{{selected.x}}" cy="{{selected.y}}"></circle>
-                  <circle class="pointer-small" r="{{clock.pointerSmall/2}}" 
-                      cx="{{selected.x}}" cy="{{selected.y}}"></circle>
-                  <line class="lineA" x1="{{clock.radius}}" y1="{{clock.radius}}" 
-                      x2="{{selected.edge.x}}" y2="{{selected.edge.y}}"></line>
-                  <line class="lineB" x1="{{selected.edge.x}}" y1="{{selected.edge.y}}" 
-                      x2="{{selected.x}}" y2="{{selected.y}}"></line>
-                </g>
-                <template repeat="{{n in numbers}}">
-                  <g class="number" type="{{type}}" value="{{n.number}}">
-                    <template if="{{n.visible}}">
-                      <text x="{{n.x}}" y="{{n.y}}">{{n.numberDisplay}}</text>
-                    </template>
-                  </g>
-                </template>
-                </g>
-              <g id="choosePeriod">
-                <g class="period" value="AM" on-tap="{{selectPeriod}}" active?="{{clock.period == 'AM'}}">
-                  <circle r="{{clock.periodChooser/2}}" cx="{{clock.periodChooser/2}}" cy="{{clock.radius * 1.95}}"></circle>
-                  <text x="{{clock.periodChooser/2}}" y="{{clock.radius * 1.95}}">AM</text>
-                </g>
-                <g class="period" value="PM" on-tap="{{selectPeriod}}" active?="{{clock.period == 'PM'}}">
-                  <circle r="{{clock.periodChooser/2}}" cx="{{(clock.radius * 2) - (clock.periodChooser/2)}}" cy="{{clock.radius * 1.95}}"></circle>
-                  <text x="{{(clock.radius * 2) - (clock.periodChooser/2)}}" y="{{clock.radius * 1.95}}">PM</text>
-                </g>
-              </g>
-              <!-- defines the area in which a number can be selected -->
-              <path class="select-area" on-down="{{startClockSelect}}" on-track="{{startClockSelect}}" on-up="{{finishClockSelect}}"
-                  d="
-                  M {{clock.radius - clock.r1}} {{ clock.radius }}
-                  A {{clock.r1}} {{clock.r1}} 0 0 0 {{clock.radius + clock.r1}} {{ clock.radius }}
-                  A {{clock.r1}} {{clock.r1}} 0 0 0 {{clock.radius - clock.r1}} {{ clock.radius }}
-                  M {{clock.radius - clock.r3}} {{ clock.radius }}
-                  A {{clock.r3}} {{clock.r3}} 0 0 1 {{clock.radius + clock.r3}} {{ clock.radius }}
-                  A {{clock.r3}} {{clock.r3}} 0 0 1 {{clock.radius - clock.r3}} {{ clock.radius }}
-              "></path>
-            </svg>
-          </template>
-          <section name="hour" id="chooseHour" animate>
-            <template bind ref="clockTpl" id="hoursClock"></template>
+      <div id="clockArea">
+        <iron-selector id="periodSelector" selected="{{period}}" attr-for-selected="name">
+          <div class="period" name="AM">AM</div>
+          <div class="period" name="PM">PM</div>
+        </iron-selector>
+        <iron-selector id="selectors" selected="{{_page}}" attr-for-selected="name" activate-event="">
+          <section name="hour" id$="selectHour">
+            <paper-clock-selector id="hourSelector" count="12" selected="{{hour12}}"></paper-clock-selector> 
           </section>
-          <section name="minute" id="chooseMinute" animate>
-            <template bind ref="clockTpl" id="minutesClock"></template>
+          <section name="minute" id$="selectMinute">
+            <paper-clock-selector id="minuteSelector" count="60" selected="{{minute}}" zero-pad use-zero></paper-clock-selector>
           </section>
-        </core-animated-pages>
+        </iron-selector>
       </div>
     </div>
   </template>
   <script>
-    var CLOCK_TYPE_HOURS = 'hours';
-    var CLOCK_TYPE_MINUTES = 'minutes';
-
-    // these values are a percentage of the radius
-    var POINTER_LARGE = 32;
-    var POINTER_SMALL = 8;
-    var CLOCK_FACE_PADDING = 4;
-    var PERIOD_CHOOSER = 36;
-
-    Polymer.mixin(Polymer.CoreResizable, Polymer("paper-time-picker", {
-      publish: {
-        /**
-         * The selected hour (0-23)
-         * @attribute hour
-         * @type int
-         * @default 0
-        */
-        hour: 0,
-        /**
-         * The selected minute (0-60)
-         * @attribute minute
-         * @type int
-         * @default 0
-         */
-        minute: 0,
-        /**
-         * Maximum screen width at which the picker uses a vertical layout
-         * @attribute responsiveWidth
-         * @type string
-         * @default '560px'
-         */
-        responsiveWidth: '560px',
-        /**
-         * Force narrow layout
-         * @attribute forceNarrow
-         * @type boolean
-         * @default false
-         */
-        forceNarrow: false,
-        narrow: {type: 'boolean', value: false, reflect: true},
-        isTouch: {type: 'boolean', value: false, reflect: true}
-      },
-      eventDelegates: {
-        'down': '_down',
-        'core-resize': 'updateSize'
-      },
-      ready: function() {
-        this.isTouch = 'ontouchstart' in window;
-        this.page = 'hour';
-        this._initClock();
-        this.hourChanged();
-        this.minuteChanged();
-      },
-      domReady: function() {
-        this.updateSize();
-      },
-      _initClock: function() {
-        var clock = {
-          hours: [],
-          minutes: []
-        };
-
-        for (var i=0; i<12; i++) {
-          clock.hours.push({
-            number: i,
-            numberDisplay: i == 0 ? 12: i,
-            visible: true
-          });
-        }
-
-        for (var i=0; i<60; i++) {
-          clock.minutes.push({
-            number: i,
-            numberDisplay: ('0' + i).substr(-2, 2),
-            visible: i % 5 == 0
-          });
-        }
-
-        this.clock = clock;
-        this.$.hoursClock.model = {
-          type: CLOCK_TYPE_HOURS,
-          numbers: clock.hours,
-          clock: clock
-        };
-        this.$.minutesClock.model = {
-          type: CLOCK_TYPE_MINUTES,
-          numbers: clock.minutes,
-          clock: clock
-        };
-      },
-      updateSize: function() {
-        var clock = this.clock;
-        var clockFace = this.$.clockFace;
-        var radius = this.$.clockFace.offsetWidth / 2;
-        clock.radius = radius;
-        clock.rect = clockFace.getBoundingClientRect();
-        clock.pointerLarge = radius * (POINTER_LARGE / 100);
-        clock.pointerSmall = radius * (POINTER_SMALL / 100);
-        clock.periodChooser = radius * (PERIOD_CHOOSER / 100);
-        clock.padding = radius * (CLOCK_FACE_PADDING / 100);
-        this._positionClockPoints(clock.hours);
-        this._positionClockPoints(clock.minutes);
-      },
-      _positionClockPoints: function(numbers) {
-        var points = numbers.length;
-        var angle = (360 / points) * (Math.PI / 180);
-        var clock = this.clock;
-        var r = clock.radius;
-        var r1 = r - clock.padding;
-        var r2 = r1 - (clock.pointerLarge / 2);
-        var r3 = r1 - clock.pointerLarge;
-        var sin, cos, a, aA, aB;
-        for (var i=0; i<points; i++) {
-          a = angle * i;
-          aA = a - (angle / 2);
-          aB = a + (angle / 2);
-
-          sin = Math.sin(a);
-          cos = Math.cos(a);
-          sinA = Math.sin(aA);
-          cosA = Math.cos(aA);
-          sinB = Math.sin(aB);
-          cosB = Math.cos(aB);
-          // position of center of selector
-          numbers[i].x = r + (sin * r2);
-          numbers[i].y = r - (cos * r2);
-          // end-point on line from radius to edge of selector
-          numbers[i].edge = {x: r + (sin * r3), y: r - (cos * r3)};
-        }
-        clock.r1 = r1;
-        clock.r2 = r2;
-        clock.r3 = r3;
-      },
-      selectClockNumber: function(e, n, el) {
-        var num = parseInt(el.getAttribute('value'));
-        var type = el.getAttribute('type');
-        if (type == CLOCK_TYPE_HOURS) {
-          num = num == 12 ? 0 : num;
-          if (this.period == 'PM') {
-            num += 12;
+    (function() {
+      Polymer({
+        is: 'paper-time-picker',
+        properties: {
+          /**
+           * The selected time (HH:MM)
+           * @attribute time
+           * @type String
+           * @default '00:00'
+          */
+          time: {
+            type: String,
+            value: '00:00'
+          },
+          /**
+           * Maximum screen width at which the picker uses a vertical layout
+           * @attribute responsiveWidth
+           * @type string
+           * @default '640px'
+           */
+          responsiveWidth: {
+            type: String,
+            value: '640px'
+          },
+          /**
+           * Force narrow layout
+           * @attribute forceNarrow
+           * @type boolean
+           * @default false
+           */
+          forceNarrow: {
+            type: Boolean,
+            value: false
+          },
+          narrow: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false,
+            notify: true,
+          },
+          isTouch: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          },
+          hour: {
+            type: Number,
+            value: 0,
+            observer: '_hourChanged'
+          },
+          hour12: {
+            type: Number,
+            value: 0,
+            observer: '_hour12Changed'
+          },
+          minute: {
+            type: Number,
+            value: 0,
+            observer: '_minuteChanged'
+          },
+          period: {
+            type: String,
+            value: 'AM',
+            observer: '_periodChanged'
+          },
+          _queryMatches: {
+            type: Boolean,
+            value: false,
+            observer: '_computeNarrow'
           }
-          this.hour = num;
-        } else if (type == CLOCK_TYPE_MINUTES) {
-          this.minute = num;
-        }
-        this.page = 'minute';
-      },
-      startClockSelect: function(e) {
-        var clock = this.clock;
-        var page = this.page;
-        var r = clock.radius;
-        var x = e.clientX - clock.rect.left - r;
-        var y = e.clientY - clock.rect.top - r;
-        var distance = Math.abs(Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)));
-        if (distance < clock.r3 || distance > clock.r1) {
-          this._startClockSelect = false;
-          return;
-        }
-        this._startClockSelect = true;
-        var points = this.page == 'minute' ? 60 : 12;
-        var interval = (360 / points) * (Math.PI / 180);
-
-        // find angle, rotate -90deg, then convert to a full circle value;
-        var theta = Math.atan(y / x)
-        theta = (Math.PI / 2) + (x < 0 ? theta + Math.PI : theta);
-
-        // find the nearest value
-        value = Math.round(theta / interval);
-        
-        // set to zero if max (eg, 12 = 0);
-        value = (value == points) ? 0 : value;
-
-        // set the hour/minute property depending on current page
-        if (this[page] != value) {
-          if (page == 'hour' && this.period == 'PM') {
-              value += 12;
+        },
+        behaviors: [
+          Polymer.IronResizableBehavior
+        ],
+        ready: function() {
+          this.isTouch = 'ontouchstart' in window;
+          this._page = 'hour';
+          this.addEventListener('paper-clock-selected', this._timeSelected);
+        },
+        /**
+         * Get/set the selected time
+         * @attribute time
+         * @type String
+         * @default '00:00'
+         */
+        get time() {
+          var hour = this.hour % 12 || 12;
+          var minute = ('0' + this.minute).substr(-2);
+          return hour + ':' + minute + ' ' + this.period;
+        },
+        set time(timeString) {
+          var pattern = /^\s*(\d{1,2}):?(\d{2})(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/;
+          var match = timeString.match(pattern);
+          if (!match) {
+            throw "Invalid time";
           }
-          this[this.page] = value;
+          var hour = parseInt(match[1]);
+          var minute = parseInt(match[2]);
+          var period = match[4] ? match[4].toLowerCase() : null;
+          if (period == 'p' && hour <= 12) {
+            hour = (hour + 12) % 24;
+          }
+          this.set('hour', hour);
+          this.set('minute', minute);
+        },
+        togglePeriod: function() {
+          this.period = (this.period == 'AM') ? 'PM' : 'AM';
+        },
+        _hour12Changed: function(hour12) {
+          var add = (this.period == 'PM' ? 12 : 0);
+          this.hour = ((hour12 % 12) + add) % 24;
+        },
+        _hourChanged: function(hour, oldValue) {
+          if (isNaN(parseInt(hour))) {
+            throw "Invalid number";
+          }
+          hour = parseFloat(hour) % 24;
+          this.hour12 = this._twelveHour(hour);
+          this.period = ['PM', 'AM'][+(hour < 12)];
+          this.hour = hour;
+          this.fire('time-changed', {hour: this.hour, minute: this.minute});
+        },
+        _minuteChanged: function(minute, oldValue) {
+          if (isNaN(minute)) {
+            throw "Invalid number";
+          }
+          this.minute = Math.round(minute) % 60;
+        },
+        _timeChanged: function() {
+          this.fire('time-changed', {hour: this.hour, minute: this.minute});
+        },
+        _periodChanged: function(period) {
+          this.hour += (period == 'PM') ? 12 : -12;
+        },
+        _zeroPad: function(value, length) {
+          if (value === undefined || isNaN(value) || isNaN(length)) return;
+          return ('0' + value).substr(-length);
+        },
+        _twelveHour: function(hour) {
+          return hour % 12 || 12;
+        },
+        _isEqual: function(a, b) {
+          return a == b;
+        },
+        _getMediaQuery: function(forceNarrow, responsiveWidth) {
+          return '(max-width: ' + (forceNarrow ? '' : responsiveWidth) + ')';
+        },
+        _computeNarrow: function() {
+          this.set('narrow', this._queryMatches || this.forceNarrow);
+        },
+        _timeSelected: function(e) {
+          this._page = 'minute';
         }
-
-        this._allowVibrate = true;
-      },
-      finishClockSelect: function() {
-        if (!this._startClockSelect) {
-          return;
-        }
-        if (this.page == 'hour') {
-          this.page = 'minute';
-        }
-        this._startClockSelect = false;
-      },
-      pageChanged: function() {
-        this.$.timePartSelector.selected = this.page;
-        this.$.clockFace.selected = this.page;
-        this._vibrate();
-      },
-      hourChanged: function(oldValue) {
-        var hour = this.hour % 24;
-        if (isNaN(hour)) {
-          this.hour = oldValue;
-          return;
-        }
-        this.hour = hour;
-        this.periodChanged();
-        var model = this.$.hoursClock.model;
-        model.selected = model.numbers[hour % 12];
-        this.fire('time-changed', {hour: this.hour, minute: this.minute});
-        this._vibrate();
-      },
-      minuteChanged: function(oldValue) {
-        var minute = this.minute % 60;
-        if (isNaN(minute)) {
-          this.minute = oldValue;
-          return;
-        }
-        this.minute = minute;
-        var model = this.$.minutesClock.model;
-        model.selected = model.numbers[this.minute];
-        this.minuteDisplay = ('0' + this.minute).substr(-2,2)
-        this.fire('time-changed');
-        this._vibrate();
-      },
-      periodChanged: function() {
-        this.period = ['PM', 'AM'][+(this.hour < 12)]
-        this.clock.period = this.period;
-      },
-      queryMatchesChanged: function() {
-        this.narrow = this.queryMatches || this.forceNarrow;
-      },
-      selectTimePart: function() {
-        this.page = this.$.timePartSelector.selected;
-      },
-      selectPeriod: function(e, n, el) {
-        var period = el.getAttribute('value');
-        if (period != this.period) {
-          this.changePeriod();
-        }
-      },
-      changePeriod: function() {
-        this.hour = (this.hour + 12) % 24;
-      },
-      get time() {
-        var hour = this.hour % 12 || 12;
-        var minute = ('0' + this.minute).substr(-2);
-        return hour + ':' + minute + ' ' + this.period;
-      },
-      set time(timeString) {
-        var pattern = /^\s*(\d{1,2}):?(\d{2})(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/
-        var match = timeString.match(pattern);
-        if (!match) {
-          throw "Invalid time";
-        }
-        var hour = parseInt(match[1]);
-        var minute = parseInt(match[2]);
-        var period = match[4] ? match[4].toLowerCase() : null;
-        if (period == 'p' && hour <= 12) {
-          hour = (hour + 12) % 24;
-        }
-        this.hour = hour;
-        this.minute = minute;
-      },
-      zeroPad: function(value, length) {
-        return ('0' + value).substr(-length);
-      },
-      _down: function() {
-        this._allowVibrate = true;
-      },
-      _vibrate: function() {
-        if (this._allowVibrate) {
-          this.job('vibrate', function() {
-            navigator.vibrate && navigator.vibrate(10);
-            this._allowVibrate = false;
-          });
-        }
-      },
-    }));
+      });
+    })();
   </script>
-
-</polymer-element>
+</dom-module>

@@ -1,23 +1,26 @@
 :host /deep/ * {
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  --webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 :host {
   display: block;
-  overflow: hidden;
-  color: #757575;
-  background: #eeeeee;
-  font-size: 14px;
-  -webkit-font-smoothing: antialiased;
+  @apply(--paper-font-body1);
+  background: var(--default-background-color);
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  overflow: hidden;
+  font-size: 14px;
 }
 
 #timePicker {
   height: 100%;
+  @apply(--layout-horizontal);
+}
+:host([narrow]) #timePicker {
+  @apply(--layout-vertical);
 }
 
 /** Horizontal ******************/
@@ -28,9 +31,14 @@
 #heading { 
   width: 270px;
   height: 240px;
+  @apply(--layout-horizontal);
+  @apply(--layout-center);
+  @apply(--layout-center-justified);
 }
-#clock {
+#clockArea {
   margin: 12px 22px;
+  @apply(--layout-vertical);
+  @apply(--layout-flex);
 }
 
 /** Narrow *********************/
@@ -47,25 +55,24 @@
 
 /** Heading ********************/
 #heading {
-  color: #8acfc8;
-  background: #009688;
+  color: var(--light-primary-color);
+  background: var(--default-primary-color);
 }
 #heading .time {
   font-size: 0;
-  width: 172px;
+  width: 200px;
   text-align: right;
 }
-#heading .time .core-selected {
-  color: #fff; 
-  font-weight: normal;
+#heading .time .iron-selected {
+  color: var(--text-primary-color);
 }
-#heading .time .period,
-#heading .time .core-selected.period {
-  font-size: 20px;
-  font-weight: 500;
+#heading .time .period {
+  @apply(--paper-font-title);
+  padding-left: 4px;
+  line-height: 33px !important;
 }
 #heading .time div {
-  font-size: 50px;
+  @apply(--paper-font-display3);
   display: inline-block;
   padding: 2px;
 }
@@ -74,104 +81,64 @@
 }
 
 /** Clock *********************/
-#clock {
+#clockArea {
   position: relative;
 }
-svg.clock {
-  display: block;
-  margin: 0 auto;
-  overflow: visible;
-  width: 100%;
-  height: 100%;
-}
-svg.clock .face {
-  fill: #dfdfdf;
-}
-svg.clock .number {
-  fill: rgba(0,0,0,0);
-}
-svg.clock .lineA {
-  stroke: #b9d9d6; 
-}
-svg.clock .pointer-large {
-  fill: #b9d9d6;
-}
-svg.clock .lineB {
-  stroke: #009688;
-}
-svg.clock .pointer-small {
-  fill: #009688;
-}
-svg.clock .pointer.visible .lineB,
-svg.clock .pointer.visible .pointer-small {
-  fill: none;
-  stroke: none;
-}
-svg.clock .dot,
-svg.clock .number text {
-  fill: #757575;
-}
-svg.clock .number text {
+#selectors {
   pointer-events: none;
-  font-size: 18px;
-  dominant-baseline: middle;
-  text-align: center;
-  text-anchor: middle;
 }
-svg.clock .select-area {
-  fill-opacity: 0;
+#selectors, 
+#selectors > section,
+#selectors > section > * {
+  @apply(--layout-fit);
 }
-svg.clock .select-area:hover {
+
+#selectors section.iron-selected {
+  z-index: 1000;
+}
+#selectors section {
+  z-index: 0;
+}
+
+/** Period selector *************/
+#periodSelector {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 38px;
+  @apply(--layout-horizontal);
+  @apply(--layout-justified);
+}
+#periodSelector .period {
   cursor: pointer;
+  width: 36px;
+  height: 36px;
+  line-height: 38px;
+  border-radius: 100%;
+  text-align: center;
+  vertical-align: middle;
+}
+#periodSelector .period.iron-selected {
+  background: var(--default-primary-color);
+  color: var(--text-primary-color);
 }
 
 /** Clock transition ***********/
-section {
-  z-index: 0;
+#selectors .iron-selected /deep/ #clock .face {
+  opacity: 1;
 }
-svg.clock .numbers {
+#selectors .iron-selected /deep/ #clock .numbers {
+  transform: scale(1);
+  opacity: 1;
+}
+#selectors /deep/ #clock .face {
+  transition: opacity 500ms;
+  opacity: 0;
+}
+#selectors /deep/ #clock .numbers {
   transition: transform 500ms, opacity 500ms;
   transform: scale(1.2);
   transform-origin: 50% 50%;
   opacity: 0;
-}
-svg.clock .face {
-  transition: opacity 500ms step-end;
-  opacity: 0;
-}
-section.core-selected {
-  z-index: 1000;
-}
-section.core-selected svg.clock .face {
-  opacity: 1;
-}
-section.core-selected svg.clock .numbers {
-  transform: scale(1);
-  opacity: 1;
-}
-/** Period chooser *************/
-#choosePeriod .period circle {
-  fill-opacity: 0;
-}
-#choosePeriod .period circle:hover {
-  cursor: pointer;
-}
-#choosePeriod .period text {
-  pointer-events: none;
-  fill: #757575;
-  font-size: 14px;
-  dominant-baseline: middle;
-  text-align: center;
-  text-anchor: middle;
-}
-
-#choosePeriod .period[active] circle {
-  fill: #b9d9d6;
-  fill-opacity: 1;
-}
-
-#test {
-  background: red;
-  width: 100px;
-  height: 100px;
 }
