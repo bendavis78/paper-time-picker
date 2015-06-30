@@ -128,6 +128,7 @@ svg.clock .select-area:hover {
 /** Clock transition ***********/
 section {
   z-index: 0;
+  margin: 0;
 }
 svg.clock .numbers {
   transition: transform 500ms, opacity 500ms;
