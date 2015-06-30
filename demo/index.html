@@ -10,7 +10,7 @@
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
   <link rel="import" href="../paper-time-picker.html">
-  <link rel="import" href="../../font-roboto/roboto.html">
+  <link rel="import" href="../../paper-styles/paper-styles.html">
   <link rel="import" href="../../paper-dialog/paper-dialog.html">
   <link rel="import" href="../../paper-button/paper-button.html">
 
@@ -18,7 +18,8 @@
     html /deep/ * {
     }
     body {
-      @apply(--paper-style-font-body1);
+      @apply(--paper-font-common-base);
+      @apply(--paper-font-body1);
       color: #333;
     }
     section {
@@ -53,7 +54,6 @@
         this.$.dialog.toggle();
       };
       scope.time = "3:30 pm";
-      scope.showDialog();
     });
   </script>
 </body>
