@@ -99,6 +99,10 @@ gulp.task('serve', ['bower'], function () {
 
 gulp.task('gh-pages', function() {
   var pkgName = getPackage().name;
+
+  // delete remote gh-pages branch
+  git.push('origin', ':gh-pages');
+
   return merge(
     gulp.src(gitFiles())
       .pipe(copy('.tmp/' + pkgName)),
