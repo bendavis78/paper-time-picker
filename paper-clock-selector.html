@@ -21,17 +21,7 @@
           <line class="lineB" x1$="{{_selected.innerEdge.x}}" y1$="{{_selected.innerEdge.y}}" x2$="{{_selected.x}}" y2$="{{_selected.y}}"></line>
         </g>
       </g>
-      <g id="numbers">
-        <!--
-        <template id="numbers" is="dom-repeat" items="{{_numbers}}" as="n">
-          <g class$="{{_getNumberClass('number', n, _selected)}}">
-            <template is="dom-if" if="{{n.display}}">
-              <text x$="{{n.x}}" y$="{{n.y}}">{{_formatNumber(n, zeroPad)}}</text>
-            </template>
-          </g>
-        </template>
-        -->
-      </g>
+      <g id="numbers"></g>
       <path class="select-area" on-down="_startSelect" on-track="_startSelect" on-up="_finishSelect" 
         d$="{{_getSelectArea(_radius, _selectorInner, _selectorOuter)}}"></path>
     </svg>

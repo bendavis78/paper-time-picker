@@ -128,7 +128,7 @@
 #selectors .iron-selected /deep/ #clock .face {
   opacity: 1;
 }
-#selectors .iron-selected /deep/ #clock .numbers {
+#selectors .iron-selected /deep/ #clock #numbers {
   transform: scale(1);
   opacity: 1;
 }
@@ -136,7 +136,7 @@
   transition: opacity 500ms;
   opacity: 0;
 }
-#selectors /deep/ #clock .numbers {
+#selectors /deep/ #clock #numbers {
   transition: transform 500ms, opacity 500ms;
   transform: scale(1.2);
   transform-origin: 50% 50%;
