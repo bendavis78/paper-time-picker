@@ -162,7 +162,7 @@
           this._selectedChanged(this.selected);
           this._updateSize();
         },
-        _updateNumber(change) {
+        _updateNumber: function(change) {
           var parts = change.path.split('.');
           var idx = parseInt(parts[1]);
           if (isNaN(idx)) {
@@ -191,7 +191,7 @@
               break;
           }
         },
-        _createNumberElement(number) {
+        _createNumberElement: function(number) {
           // We can't use templates inside SVG elements, so we have to create
           // the numbers in dom and set up attribute bindings manually
           function create(type, classList) {
