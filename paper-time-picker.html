@@ -61,17 +61,16 @@ If you include this element as part of `paper-dialog`, use the class
     <div id="timePicker">
       <div id="heading">
         <iron-selector class="time" id="timeParts" selectable="[name]" attr-for-selected="name" selected="{{_page}}">
-          <div name="hour" class="hour">{{_twelveHour(hour)}}</div>
-          <div class="sep">:</div>
-          <div name="minute" class="minute">{{_zeroPad(minute, 2)}}</div>
-          <div class="period" self-end on-tap="togglePeriod">{{period}}</div>
+          <span name="hour" class="hour">[[_twelveHour(hour)]]</span>
+          <span class="sep">:</span>
+          <span name="minute" class="minute">[[_zeroPad(minute, 2)]]</span>
         </iron-selector>
-      </div>
-      <div id="clockArea">
-        <iron-selector id="periodSelector" selected="{{period}}" attr-for-selected="name">
+        <iron-selector id="periodSelector" selected="{{period}}" attr-for-selected="name" selectable="[name]">
           <div class="period" name="AM">AM</div>
           <div class="period" name="PM">PM</div>
         </iron-selector>
+      </div>
+      <div id="clockArea">
         <iron-selector id="selectors" selected="{{_page}}" attr-for-selected="name" activate-event="">
           <section name="hour" id$="selectHour">
             <paper-clock-selector id="hourSelector" count="12" selected="{{hour12}}"></paper-clock-selector>
