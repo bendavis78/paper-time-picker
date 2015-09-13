@@ -74,7 +74,7 @@ If you include this element as part of `paper-dialog`, use the class
         </iron-selector>
         <iron-selector id="selectors" selected="{{_page}}" attr-for-selected="name" activate-event="">
           <section name="hour" id$="selectHour">
-            <paper-clock-selector id="hourSelector" count="12" selected="{{hour12}}"></paper-clock-selector> 
+            <paper-clock-selector id="hourSelector" count="12" selected="{{hour12}}"></paper-clock-selector>
           </section>
           <section name="minute" id$="selectMinute">
             <paper-clock-selector id="minuteSelector" count="60" selected="{{minute}}" zero-pad use-zero></paper-clock-selector>
@@ -211,6 +211,7 @@ If you include this element as part of `paper-dialog`, use the class
             throw "Invalid number";
           }
           this.minute = Math.round(minute) % 60;
+          this.fire('time-changed', {hour: this.hour, minute: this.minute});
         },
         _timeChanged: function() {
           this.fire('time-changed', {hour: this.hour, minute: this.minute});
