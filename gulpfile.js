@@ -1,6 +1,6 @@
 'use strict';
 
-var gulp = require('gulp');
+var gulp = require('gulp-param')(require('gulp'), process.argv);
 var add = require('gulp-add');
 var del = require('del');
 var browserSync = require('browser-sync').create();
@@ -71,7 +71,7 @@ gulp.task('release:minor', _bump.bind(null, 'minor'));
 gulp.task('release:major', _bump.bind(null, 'major'));
 
 // Watch Files For Changes & Reload
-gulp.task('serve', ['bower'], function () {
+gulp.task('serve', ['bower'], function (port) {
   var pkgRoot = '/' + getPackage().name;
   var opts = {
     notify: false,
@@ -89,12 +89,21 @@ gulp.task('serve', ['bower'], function () {
       routes: {}
     }
   };
+
+  if (port) {
+    port = parseInt(port);
+    opts.port = port;
+    opts.ui = {port: port + 1};
+  }
+
   opts.server.routes[pkgRoot] = '.';
   browserSync.init(opts);
 
   gulp.watch(['**/*.html']).on('change', reload);
   gulp.watch(['**/*.css']).on('change', reload);
-  gulp.watch(['bower.json']).on('change', 'bower:reload');
+  gulp.watch(['bower.json']).on('change', function() {
+    gulp.start('bower:reload');
+  });
 });
 
 gulp.task('gh-pages', function() {
@@ -109,7 +118,7 @@ gulp.task('gh-pages', function() {
     bower('.tmp')
       .pipe(add(
         'index.html',
-        '<meta http-equev="refresh" content="0;' + pkgName + '/">'
+        '<meta http-equiv="refresh" content="0;' + pkgName + '/">'
       ))
     ).pipe(ghPages()).on('end', function() {
       del(['.tmp', '.publish']);
