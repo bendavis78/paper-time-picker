@@ -26,13 +26,13 @@ Setting the initial time to 4:20pm (note that hours given as 24-hour):
 If you include this element as part of `paper-dialog`, use the class
 `"paper-time-picker-dialog"` on the dialog in order to give it proper styling.
 
-    <paper-action-dialog id="dialog" modal class="paper-time-picker-dialog">
+    <paper-dialog id="dialog" modal class="paper-time-picker-dialog">
       <paper-time-picker id="timePicker"></paper-time-picker>
       <div class="buttons">
         <paper-button dialog-dismiss>Cancel</paper-button>
         <paper-button dialog-confirm>OK</paper-button>
       </div>
-    </paper-action-dialog>
+    </paper-dialog>
 
 @element paper-time-picker
 @blurb Provides a responsive time picker based on the material design spec.
@@ -74,7 +74,7 @@ If you include this element as part of `paper-dialog`, use the class
         </iron-selector>
         <iron-selector id="selectors" selected="{{_page}}" attr-for-selected="name" activate-event="">
           <section name="hour" id$="selectHour">
-            <paper-clock-selector id="hourSelector" count="12" selected="{{hour12}}"></paper-clock-selector> 
+            <paper-clock-selector id="hourSelector" count="12" selected="{{hour12}}"></paper-clock-selector>
           </section>
           <section name="minute" id$="selectMinute">
             <paper-clock-selector id="minuteSelector" count="60" selected="{{minute}}" zero-pad use-zero></paper-clock-selector>
