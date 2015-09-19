@@ -178,27 +178,27 @@ If you include this element as part of `paper-dialog`, use the class
           var pattern = /^\s*(\d{1,2}):?(\d{2})(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/;
           var match = timeString.match(pattern);
           if (!match) {
-            throw "Invalid time";
+            throw 'Invalid time';
           }
           var hour = parseInt(match[1]);
           var minute = parseInt(match[2]);
           var period = match[4] ? match[4].toLowerCase() : null;
-          if (period == 'p' && hour <= 12) {
+          if (period === 'p' && hour <= 12) {
             hour = (hour + 12) % 24;
           }
           this.set('hour', hour);
           this.set('minute', minute);
         },
         togglePeriod: function() {
-          this.period = (this.period == 'AM') ? 'PM' : 'AM';
+          this.period = (this.period === 'AM') ? 'PM' : 'AM';
         },
         _hour12Changed: function(hour12) {
-          var add = (this.period == 'PM' ? 12 : 0);
+          var add = (this.period === 'PM' ? 12 : 0);
           this.hour = ((hour12 % 12) + add) % 24;
         },
-        _hourChanged: function(hour, oldValue) {
+        _hourChanged: function(hour) {
           if (isNaN(parseInt(hour))) {
-            throw "Invalid number";
+            throw 'Invalid number';
           }
           hour = parseFloat(hour) % 24;
           this.hour12 = this._twelveHour(hour);
@@ -206,9 +206,9 @@ If you include this element as part of `paper-dialog`, use the class
           this.hour = hour;
           this.fire('time-changed', {hour: this.hour, minute: this.minute});
         },
-        _minuteChanged: function(minute, oldValue) {
+        _minuteChanged: function(minute) {
           if (isNaN(minute)) {
-            throw "Invalid number";
+            throw 'Invalid number';
           }
           this.minute = Math.round(minute) % 60;
         },
@@ -216,17 +216,19 @@ If you include this element as part of `paper-dialog`, use the class
           this.fire('time-changed', {hour: this.hour, minute: this.minute});
         },
         _periodChanged: function(period) {
-          this.hour += (period == 'PM') ? 12 : -12;
+          this.hour += (period === 'PM') ? 12 : -12;
         },
         _zeroPad: function(value, length) {
-          if (value === undefined || isNaN(value) || isNaN(length)) return;
+          if (value === undefined || isNaN(value) || isNaN(length)) {
+            return;
+          }
           return ('0' + value).substr(-length);
         },
         _twelveHour: function(hour) {
           return hour % 12 || 12;
         },
         _isEqual: function(a, b) {
-          return a == b;
+          return a === b;
         },
         _getMediaQuery: function(forceNarrow, responsiveWidth) {
           return '(max-width: ' + (forceNarrow ? '' : responsiveWidth) + ')';
@@ -234,7 +236,7 @@ If you include this element as part of `paper-dialog`, use the class
         _computeNarrow: function() {
           this.set('narrow', this._queryMatches || this.forceNarrow);
         },
-        _timeSelected: function(e) {
+        _timeSelected: function() {
           this._page = 'minute';
         }
       });
