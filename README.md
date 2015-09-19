@@ -7,7 +7,7 @@ component aims to be a clone of the time picker introduced in Android Lollipop.
 
 ![wide picker screenshot][wide] ![narrow picker screenshot][narrow]
 
-See the [component page](http://bendavis78.github.io/paper-time-picker/) for 
+See the [component page](http://bendavis78.github.io/paper-time-picker/) for
 full documentation.
 
 ## Examples:
@@ -28,13 +28,13 @@ If you include this element as part of `paper-dialog`, use the class
 `"paper-time-picker-dialog"` on the dialog in order to give it proper styling.
 
 ```html
-<paper-action-dialog id="dialog" modal class="paper-time-picker-dialog">
+<paper-dialog id="dialog" modal class="paper-time-picker-dialog">
   <paper-time-picker id="timePicker"></paper-time-picker>
   <div class="buttons">
     <paper-button dialog-dismiss>Cancel</paper-button>
     <paper-button dialog-confirm>OK</paper-button>
   </div>
-</paper-action-dialog>
+</paper-dialog>
 ```
 
 ---

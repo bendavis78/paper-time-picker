@@ -28,12 +28,12 @@
   width: 520px;
   height: 240px;
 }
-#heading { 
+#heading {
   width: 270px;
   height: 240px;
   @apply(--layout-horizontal);
   @apply(--layout-center);
-  @apply(--layout-center-justified);
+  @apply(--layout-end-justified);
 }
 #clockArea {
   margin: 12px 22px;
@@ -44,7 +44,7 @@
 /** Narrow *********************/
 :host([narrow]) {
   width: 270px;
-  height: 366px;
+  height: 346px;
 }
 :host([narrow]) #heading {
   height: 96px;
@@ -58,26 +58,26 @@
   color: var(--light-primary-color);
   background: var(--default-primary-color);
 }
-#heading .time {
-  font-size: 0;
-  width: 200px;
-  text-align: right;
-}
-#heading .time .iron-selected {
+#heading .iron-selected {
   color: var(--text-primary-color);
 }
-#heading .time .period {
-  @apply(--paper-font-title);
-  padding-left: 4px;
-  line-height: 33px !important;
-}
-#heading .time div {
-  @apply(--paper-font-display3);
-  display: inline-block;
-  padding: 2px;
-}
-#heading .time div:hover {
+#heading iron-selector:hover {
   cursor: pointer;
+}
+
+#heading .time span {
+  @apply(--paper-font-display3);
+}
+
+/** Period selector *************/
+#periodSelector {
+  margin-left: 16px;
+  margin-right: 32px;
+  @apply(--layout-vertical);
+  @apply(--layout-justified);
+}
+#periodSelector .period {
+  line-height: 25px;
 }
 
 /** Clock *********************/
@@ -87,7 +87,7 @@
 #selectors {
   pointer-events: none;
 }
-#selectors, 
+#selectors,
 #selectors > section,
 #selectors > section > * {
   @apply(--layout-fit);
@@ -100,29 +100,6 @@
   z-index: 0;
 }
 
-/** Period selector *************/
-#periodSelector {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 38px;
-  @apply(--layout-horizontal);
-  @apply(--layout-justified);
-}
-#periodSelector .period {
-  cursor: pointer;
-  width: 36px;
-  height: 36px;
-  line-height: 38px;
-  border-radius: 100%;
-  text-align: center;
-  vertical-align: middle;
-}
-#periodSelector .period.iron-selected {
-  background: var(--default-primary-color);
-  color: var(--text-primary-color);
-}
 
 /** Clock transition ***********/
 #selectors .iron-selected /deep/ #clock .face {
