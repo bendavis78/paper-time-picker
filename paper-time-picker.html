@@ -211,6 +211,7 @@ If you include this element as part of `paper-dialog`, use the class
             throw 'Invalid number';
           }
           this.minute = Math.round(minute) % 60;
+          this.fire('time-changed', {hour: this.hour, minute: this.minute});
         },
         _timeChanged: function() {
           this.fire('time-changed', {hour: this.hour, minute: this.minute});
