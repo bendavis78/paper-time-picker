@@ -35,7 +35,6 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "resolutions": {
-    "polymer": "^1.0.0",
     "webcomponentsjs": "^0.7.2"
   }
 }

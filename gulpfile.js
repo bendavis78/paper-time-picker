@@ -94,7 +94,7 @@ gulp.task('serve', ['bower'], function () {
 
   gulp.watch(['**/*.html']).on('change', reload);
   gulp.watch(['**/*.css']).on('change', reload);
-  gulp.watch(['bower.json']).on('change', 'bower:reload');
+  //gulp.watch(['bower.json']).on('change', 'bower:reload');
 });
 
 gulp.task('gh-pages', function() {

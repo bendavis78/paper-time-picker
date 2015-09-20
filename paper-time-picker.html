@@ -158,10 +158,19 @@ If you include this element as part of `paper-dialog`, use the class
         behaviors: [
           Polymer.IronResizableBehavior
         ],
+        observers: [
+          '_timeChanged(hour, minute)'
+        ],
         ready: function() {
           this.isTouch = 'ontouchstart' in window;
           this._page = 'hour';
           this.addEventListener('paper-clock-selected', this._timeSelected);
+        },
+        _formatTime(hour, minute) {
+          var period = (hour % 24) < 12 ? 'AM' : 'PM';
+          hour = hour % 12 || 12;
+          minute = ('0' + minute).substr(-2);
+          return hour + ':' + minute + ' ' + period;
         },
         /**
          * Get/set the selected time
@@ -170,9 +179,7 @@ If you include this element as part of `paper-dialog`, use the class
          * @default '00:00'
          */
         get time() {
-          var hour = this.hour % 12 || 12;
-          var minute = ('0' + this.minute).substr(-2);
-          return hour + ':' + minute + ' ' + this.period;
+          return this._formatTime(this.hour, this.minute);
         },
         set time(timeString) {
           var pattern = /^\s*(\d{1,2}):?(\d{2})(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/;
@@ -182,12 +189,16 @@ If you include this element as part of `paper-dialog`, use the class
           }
           var hour = parseInt(match[1]);
           var minute = parseInt(match[2]);
-          var period = match[4] ? match[4].toLowerCase() : null;
-          if (period === 'p' && hour <= 12) {
+          var period = match[4] ? (match[4][0].toUpperCase() + 'M') : null;
+          if (period === 'PM' && hour <= 12) {
             hour = (hour + 12) % 24;
           }
-          this.set('hour', hour);
-          this.set('minute', minute);
+          if (this._formatTime(hour, minute) === this.time) {
+            return;
+          }
+          this.hour = hour;
+          this.minute = minute;
+          this.period = period;
         },
         togglePeriod: function() {
           this.period = (this.period === 'AM') ? 'PM' : 'AM';
@@ -201,22 +212,23 @@ If you include this element as part of `paper-dialog`, use the class
             throw 'Invalid number';
           }
           hour = parseFloat(hour) % 24;
+          this.hour = hour;
           this.hour12 = this._twelveHour(hour);
           this.period = ['PM', 'AM'][+(hour < 12)];
-          this.hour = hour;
-          this.fire('time-changed', {hour: this.hour, minute: this.minute});
         },
         _minuteChanged: function(minute) {
-          if (isNaN(minute)) {
-            throw 'Invalid number';
-          }
-          this.minute = Math.round(minute) % 60;
+          minute = parseFloat(minute) % 60;
+          this.minute = minute;
         },
         _timeChanged: function() {
           this.fire('time-changed', {hour: this.hour, minute: this.minute});
         },
         _periodChanged: function(period) {
-          this.hour += (period === 'PM') ? 12 : -12;
+          if (period === 'AM' &&  this.hour >= 12) {
+            this.hour -= 12;
+          } else if (period === 'PM' && this.hour < 12) {
+            this.hour += 12;
+          }
         },
         _zeroPad: function(value, length) {
           if (value === undefined || isNaN(value) || isNaN(length)) {
