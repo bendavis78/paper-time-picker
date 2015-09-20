@@ -42,15 +42,23 @@ If you include this element as part of `paper-dialog`, use the class
 -->
 
 <style is="custom-style">
-  /* Allow easy styling of paper-time-picker-dialog */
+  /* Allow easy styling of paper-time-picker dialog */
+  :root {
+    --paper-time-picker-dialog-picker: {
+      margin-top: 0;
+      margin-bottom: 0;
+      padding: 0;
+    };
+    --paper-time-picker-dialog: {
+      margin: 0;
+      max-height: 520px !important;
+    };
+  }
   :root .paper-time-picker-dialog {
-    margin: 0;
-    max-height: 520px !important;
+    @apply(--paper-time-picker-dialog);
   }
   :root .paper-time-picker-dialog > paper-time-picker {
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 0;
+    @apply(--paper-time-picker-dialog-picker);
   }
 </style>
 
