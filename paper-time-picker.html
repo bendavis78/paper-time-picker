@@ -103,8 +103,7 @@ If you include this element as part of `paper-dialog`, use the class
            * @default '00:00'
           */
           time: {
-            type: String,
-            value: '00:00'
+            type: String
           },
           /**
            * Maximum screen width at which the picker uses a vertical layout
@@ -139,22 +138,18 @@ If you include this element as part of `paper-dialog`, use the class
           },
           hour: {
             type: Number,
-            value: 0,
             observer: '_hourChanged'
           },
           hour12: {
             type: Number,
-            value: 0,
             observer: '_hour12Changed'
           },
           minute: {
             type: Number,
-            value: 0,
             observer: '_minuteChanged'
           },
           period: {
             type: String,
-            value: 'AM',
             observer: '_periodChanged'
           },
           _queryMatches: {
@@ -173,6 +168,12 @@ If you include this element as part of `paper-dialog`, use the class
           this.isTouch = 'ontouchstart' in window;
           this._page = 'hour';
           this.addEventListener('paper-clock-selected', this._timeSelected);
+          if (this.hour === undefined) {
+            this.hour = 0;
+          }
+          if (this.minute === undefined) {
+            this.minute = 0;
+          }
         },
         _formatTime(hour, minute) {
           var period = (hour % 24) < 12 ? 'AM' : 'PM';
@@ -187,6 +188,9 @@ If you include this element as part of `paper-dialog`, use the class
          * @default '00:00'
          */
         get time() {
+          if (isNaN(this.hour) || isNaN(this.minute)) {
+            return undefined;
+          }
           return this._formatTime(this.hour, this.minute);
         },
         set time(timeString) {
