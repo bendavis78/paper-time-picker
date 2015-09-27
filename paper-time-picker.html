@@ -69,9 +69,9 @@ If you include this element as part of `paper-dialog`, use the class
     <div id="timePicker">
       <div id="heading">
         <iron-selector class="time" id="timeParts" selectable="[name]" attr-for-selected="name" selected="{{_page}}">
-          <div name="hour" class="hour">{{_twelveHour(hour)}}</div>
+          <div name="hour" class="hour">{{_twelveHour(_displayHour)}}</div>
           <div class="sep">:</div>
-          <div name="minute" class="minute">{{_zeroPad(minute, 2)}}</div>
+          <div name="minute" class="minute">{{_zeroPad(_displayMinute, 2)}}</div>
           <div class="period" self-end on-tap="togglePeriod">{{period}}</div>
         </iron-selector>
       </div>
@@ -82,10 +82,10 @@ If you include this element as part of `paper-dialog`, use the class
         </iron-selector>
         <iron-selector id="selectors" selected="{{_page}}" attr-for-selected="name" activate-event="">
           <section name="hour" id$="selectHour">
-            <paper-clock-selector id="hourSelector" count="12" selected="{{hour12}}"></paper-clock-selector> 
+            <paper-clock-selector id="hourSelector" count="12" selected="{{_displayHour}}"></paper-clock-selector> 
           </section>
           <section name="minute" id$="selectMinute">
-            <paper-clock-selector id="minuteSelector" count="60" selected="{{minute}}" zero-pad use-zero></paper-clock-selector>
+            <paper-clock-selector id="minuteSelector" count="60" selected="{{_displayMinute}}" zero-pad use-zero></paper-clock-selector>
           </section>
         </iron-selector>
       </div>
@@ -93,18 +93,15 @@ If you include this element as part of `paper-dialog`, use the class
   </template>
   <script>
     (function() {
+      function warn() {
+        if (window.console) {
+          console.warn.apply(console, arguments);
+        }
+      }
+
       Polymer({
         is: 'paper-time-picker',
         properties: {
-          /**
-           * The selected time (HH:MM)
-           * @attribute time
-           * @type String
-           * @default '00:00'
-          */
-          time: {
-            type: String
-          },
           /**
            * Maximum screen width at which the picker uses a vertical layout
            * @attribute responsiveWidth
@@ -150,7 +147,8 @@ If you include this element as part of `paper-dialog`, use the class
           },
           period: {
             type: String,
-            observer: '_periodChanged'
+            observer: '_periodChanged',
+            value: 'AM'
           },
           _queryMatches: {
             type: Boolean,
@@ -168,12 +166,6 @@ If you include this element as part of `paper-dialog`, use the class
           this.isTouch = 'ontouchstart' in window;
           this._page = 'hour';
           this.addEventListener('paper-clock-selected', this._timeSelected);
-          if (this.hour === undefined) {
-            this.hour = 0;
-          }
-          if (this.minute === undefined) {
-            this.minute = 0;
-          }
         },
         _formatTime(hour, minute) {
           var period = (hour % 24) < 12 ? 'AM' : 'PM';
@@ -188,22 +180,28 @@ If you include this element as part of `paper-dialog`, use the class
          * @default '00:00'
          */
         get time() {
-          if (isNaN(this.hour) || isNaN(this.minute)) {
+          if (isNaN(parseInt(this.hour)) || isNaN((parseInt(this.minute)))) {
             return undefined;
           }
           return this._formatTime(this.hour, this.minute);
         },
         set time(timeString) {
+          if (!timeString) {
+            return;
+          }
           var pattern = /^\s*(\d{1,2}):?(\d{2})(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/;
           var match = timeString.match(pattern);
           if (!match) {
-            throw 'Invalid time';
+            warn('Invalid time:', timeString);
+            return;
           }
           var hour = parseInt(match[1]);
           var minute = parseInt(match[2]);
           var period = match[4] ? (match[4][0].toUpperCase() + 'M') : null;
-          if (period === 'PM' && hour <= 12) {
+          if (period === 'PM' && hour < 12) {
             hour = (hour + 12) % 24;
+          } else if (period === 'AM' && hour === 12) {
+            hour = 0;
           }
           if (this._formatTime(hour, minute) === this.time) {
             return;
@@ -219,9 +217,15 @@ If you include this element as part of `paper-dialog`, use the class
           var add = (this.period === 'PM' ? 12 : 0);
           this.hour = ((hour12 % 12) + add) % 24;
         },
-        _hourChanged: function(hour) {
-          if (isNaN(parseInt(hour))) {
-            throw 'Invalid number';
+        _hourChanged: function(hour, oldValue) {
+          hour = parseInt(hour);
+          if (isNaN(hour) && !hour) {
+            return;
+          }
+          if (isNaN(hour)) {
+            warn('Invalid number:', hour);
+            this.hour = oldValue;
+            return;
           }
           hour = parseFloat(hour) % 24;
           this.hour = hour;
@@ -236,6 +240,9 @@ If you include this element as part of `paper-dialog`, use the class
           this.fire('time-changed', {hour: this.hour, minute: this.minute});
         },
         _periodChanged: function(period) {
+          if (isNaN(parseInt(this.hour)) || isNaN(parseInt(this.minute))) {
+            return;
+          }
           if (period === 'AM' &&  this.hour >= 12) {
             this.hour -= 12;
           } else if (period === 'PM' && this.hour < 12) {
@@ -260,7 +267,12 @@ If you include this element as part of `paper-dialog`, use the class
         _computeNarrow: function() {
           this.set('narrow', this._queryMatches || this.forceNarrow);
         },
-        _timeSelected: function() {
+        _timeSelected: function(e) {
+          if (this._page === 'hour') {
+            this.hour12 = e.detail.value;
+          } else {
+            this.minute = e.detail.value;
+          }
           this._page = 'minute';
         }
       });

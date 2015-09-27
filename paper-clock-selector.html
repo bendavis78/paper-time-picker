@@ -69,7 +69,7 @@
         },
         observers: [
           '_populate(count, step, useZero)',
-          '_updateNumber(_numbers.*)',
+          '_updateNumber(_numbers.*)'
         ],
         behaviors: [
           Polymer.IronResizableBehavior
@@ -77,8 +77,7 @@
         ready: function() {
           this._populate();
         },
-        _selectedChanged: function(value, oldValue) {
-          this.__data__.selected = oldValue;
+        _selectedChanged: function(value) {
           if (!this.count || isNaN(value)) {
             return;
           }
@@ -89,10 +88,10 @@
             this.set('_numbers.' + i + '.selected', value === i);
           }
 
-          if (idx === 0 && !this.userZero) {
+          if (idx === 0 && !this.useZero) {
             value = this.count;
           }
-          this.__data__.selected = value;
+          this.selected = value;
           this.set('_selected', this._numbers[idx]);
         },
         _stepChanged: function(value, oldValue) {
