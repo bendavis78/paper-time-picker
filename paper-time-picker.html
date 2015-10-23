@@ -150,6 +150,10 @@ If you include this element as part of `paper-dialog`, use the class
             observer: '_periodChanged',
             value: 'AM'
           },
+		  continuousSelect : {
+		    type : Boolean,
+		    value : false
+		  },
           _queryMatches: {
             type: Boolean,
             value: false,
@@ -273,7 +277,11 @@ If you include this element as part of `paper-dialog`, use the class
           } else {
             this.minute = e.detail.value;
           }
-          this._page = 'minute';
+  		  if (this.continuousSelect) {
+		  	  this._page = (this._page == 'minute') ? 'hour' : 'minute';
+		  } else {
+			  this._page = 'minute';
+		  }
         }
       });
     })();
