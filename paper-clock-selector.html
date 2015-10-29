@@ -153,7 +153,7 @@
         },
         _updateNumber: function(change) {
           var parts = change.path.split('.');
-          var idx = parseInt(parts[1]);
+          var idx = parseInt(parts[1] && parts[1].slice(1));
           if (isNaN(idx)) {
             return;
           }
