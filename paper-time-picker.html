@@ -69,9 +69,9 @@ If you include this element as part of `paper-dialog`, use the class
     <div id="timePicker">
       <div id="heading">
         <iron-selector class="time" id="timeParts" selectable="[name]" attr-for-selected="name" selected="{{_page}}">
-          <div name="hour" class="hour">{{_twelveHour(_displayHour)}}</div>
+          <div name="hour" class="hour">{{hour12}}</div>
           <div class="sep">:</div>
-          <div name="minute" class="minute">{{_zeroPad(_displayMinute, 2)}}</div>
+          <div name="minute" class="minute">{{_zeroPad(minute, 2)}}</div>
           <div class="period" self-end on-tap="togglePeriod">{{period}}</div>
         </iron-selector>
       </div>
@@ -82,10 +82,10 @@ If you include this element as part of `paper-dialog`, use the class
         </iron-selector>
         <iron-selector id="selectors" selected="{{_page}}" attr-for-selected="name" activate-event="">
           <section name="hour" id$="selectHour">
-            <paper-clock-selector id="hourSelector" count="12" selected="{{_displayHour}}"></paper-clock-selector> 
+            <paper-clock-selector id="hourSelector" count="12" selected="{{hour12}}"></paper-clock-selector> 
           </section>
           <section name="minute" id$="selectMinute">
-            <paper-clock-selector id="minuteSelector" count="60" selected="{{_displayMinute}}" zero-pad use-zero></paper-clock-selector>
+            <paper-clock-selector id="minuteSelector" count="60" selected="{{minute}}" zero-pad use-zero></paper-clock-selector>
           </section>
         </iron-selector>
       </div>
@@ -135,7 +135,8 @@ If you include this element as part of `paper-dialog`, use the class
           },
           hour: {
             type: Number,
-            observer: '_hourChanged'
+            observer: '_hourChanged',
+            value: 0
           },
           hour12: {
             type: Number,
@@ -143,7 +144,8 @@ If you include this element as part of `paper-dialog`, use the class
           },
           minute: {
             type: Number,
-            observer: '_minuteChanged'
+            observer: '_minuteChanged',
+            value: 0
           },
           period: {
             type: String,
@@ -186,8 +188,19 @@ If you include this element as part of `paper-dialog`, use the class
           return this._formatTime(this.hour, this.minute);
         },
         set time(timeString) {
+          var oldValue = this._formatTime(this.hour, this.minute);
           if (!timeString) {
-            return;
+            if (typeof timeString === 'undefined') {
+              // undefined basically means "reset the picker".
+              this.set('_page', 'hour');
+              // if the value is undefined, change it back to default value (midnight).
+              timeString = '0:00';
+              // make sure bound listeners get notified of the change.
+              oldValue = undefined;
+            } else {
+              // otherwise, notify any bound listeners that we're keeping the current value.
+              return;
+            }
           }
           var pattern = /^\s*(\d{1,2}):?(\d{2})(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/;
           var match = timeString.match(pattern);
@@ -197,18 +210,23 @@ If you include this element as part of `paper-dialog`, use the class
           }
           var hour = parseInt(match[1]);
           var minute = parseInt(match[2]);
-          var period = match[4] ? (match[4][0].toUpperCase() + 'M') : null;
+          var period = match[4] ? (match[4][0].toUpperCase() + 'M') : 'AM';
           if (period === 'PM' && hour < 12) {
             hour = (hour + 12) % 24;
           } else if (period === 'AM' && hour === 12) {
             hour = 0;
           }
-          if (this._formatTime(hour, minute) === this.time) {
+          if (this._formatTime(hour, minute) === oldValue) {
             return;
           }
           this.hour = hour;
           this.minute = minute;
           this.period = period;
+
+          // notify listeners of value change
+          this.async(function() {
+            this._timeChanged();
+          });
         },
         togglePeriod: function() {
           this.period = (this.period === 'AM') ? 'PM' : 'AM';
