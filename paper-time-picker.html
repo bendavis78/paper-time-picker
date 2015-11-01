@@ -259,9 +259,6 @@ If you include this element as part of `paper-dialog`, use the class
           },
           /**
            * Force narrow layout
-           * @attribute forceNarrow
-           * @type boolean
-           * @default false
            */
           forceNarrow: {
             type: Boolean,
@@ -278,20 +275,40 @@ If you include this element as part of `paper-dialog`, use the class
             value: false,
             reflectToAttribute: true
           },
+          /**
+           * The time value as the number of minutes from midnight
+           */
+          rawValue: {
+            type: Number,
+            value: 0,
+            observer: '_rawValueChanged'
+          },
+          /**
+           * The current 24-hour value (0-24)
+           */
           hour: {
             type: Number,
             observer: '_hourChanged',
             value: 0
           },
+          /**
+           * The current 12-hour value (0-12)
+           */
           hour12: {
             type: Number,
             observer: '_hour12Changed'
           },
+          /**
+           * The current minute (0-59)
+           */
           minute: {
             type: Number,
             observer: '_minuteChanged',
             value: 0
           },
+          /**
+           * The current period (AM/PM)
+           */
           period: {
             type: String,
             observer: '_periodChanged',
@@ -307,18 +324,12 @@ If you include this element as part of `paper-dialog`, use the class
           Polymer.IronResizableBehavior
         ],
         observers: [
-          '_timeChanged(hour, minute)'
+          '_timeChanged(rawValue)'
         ],
         ready: function() {
           this.isTouch = 'ontouchstart' in window;
           this._page = 'hour';
           this.addEventListener('paper-clock-selected', this._timeSelected);
-        },
-        _formatTime(hour, minute) {
-          var period = (hour % 24) < 12 ? 'AM' : 'PM';
-          hour = hour % 12 || 12;
-          minute = ('0' + minute).substr(-2);
-          return hour + ':' + minute + ' ' + period;
         },
         /**
          * Get/set the selected time
@@ -327,13 +338,13 @@ If you include this element as part of `paper-dialog`, use the class
          * @default '00:00'
          */
         get time() {
-          if (isNaN(parseInt(this.hour)) || isNaN((parseInt(this.minute)))) {
+          if (isNaN(parseInt(this.rawValue))) {
             return undefined;
           }
-          return this._formatTime(this.hour, this.minute);
+          return this.formatTime(this.hour, this.minute);
         },
         set time(timeString) {
-          var oldValue = this._formatTime(this.hour, this.minute);
+          var oldValue = this.rawValue;
           if (!timeString) {
             if (typeof timeString === 'undefined') {
               // undefined basically means "reset the picker".
@@ -347,6 +358,28 @@ If you include this element as part of `paper-dialog`, use the class
               return;
             }
           }
+
+          var time = this.parseTime(timeString);
+          var rawValue = (time.hour * 60) + time.minute;
+
+          if (rawValue === oldValue) {
+            return;
+          }
+
+          this.rawValue = rawValue;
+
+          // notify listeners of value change
+          this.async(function() {
+            this._timeChanged();
+          });
+        },
+        formatTime(hour, minute) {
+          var period = (hour % 24) < 12 ? 'AM' : 'PM';
+          hour = hour % 12 || 12;
+          minute = ('0' + minute).substr(-2);
+          return hour + ':' + minute + ' ' + period;
+        },
+        parseTime: function(timeString) {
           var pattern = /^\s*(\d{1,2}):?(\d{2})(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/;
           var match = timeString.match(pattern);
           if (!match) {
@@ -361,20 +394,14 @@ If you include this element as part of `paper-dialog`, use the class
           } else if (period === 'AM' && hour === 12) {
             hour = 0;
           }
-          if (this._formatTime(hour, minute) === oldValue) {
-            return;
-          }
-          this.hour = hour;
-          this.minute = minute;
-          this.period = period;
-
-          // notify listeners of value change
-          this.async(function() {
-            this._timeChanged();
-          });
+          return {hour: hour, minute: minute};
         },
         togglePeriod: function() {
           this.period = (this.period === 'AM') ? 'PM' : 'AM';
+        },
+        _rawValueChanged: function(value) {
+          this.hour = Math.floor(value / 60);
+          this.minute = value % 60;
         },
         _hour12Changed: function(hour12) {
           var add = (this.period === 'PM' ? 12 : 0);
