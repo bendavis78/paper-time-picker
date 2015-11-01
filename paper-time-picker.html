@@ -213,10 +213,10 @@ If you include this element as part of `paper-dialog`, use the class
     <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" query-matches="{{_queryMatches}}"></iron-media-query>
     <div id="timePicker">
       <div id="heading">
-        <iron-selector class="time" id="timeParts" selectable="[name]" attr-for-selected="name" selected="{{_page}}">
-          <div name="hour" class="hour">{{hour12}}</div>
+        <iron-selector class="time" id="timeParts" selectable="[name]" attr-for-selected="name" selected="{{view}}">
+          <div name="hours" class="hour">{{hour12}}</div>
           <div class="sep">:</div>
-          <div name="minute" class="minute">{{_zeroPad(minute, 2)}}</div>
+          <div name="minutes" class="minute">{{_zeroPad(minute, 2)}}</div>
           <div class="period" self-end on-tap="togglePeriod">{{period}}</div>
         </iron-selector>
       </div>
@@ -225,11 +225,11 @@ If you include this element as part of `paper-dialog`, use the class
           <div class="period" name="AM">AM</div>
           <div class="period" name="PM">PM</div>
         </iron-selector>
-        <iron-selector id="selectors" selected="{{_page}}" attr-for-selected="name" activate-event="">
-          <section name="hour" id$="selectHour">
+        <iron-selector id="selectors" selected="{{view}}" attr-for-selected="name" activate-event="">
+          <section name="hours" id$="selectHour">
             <paper-clock-selector id="hourSelector" count="12" selected="{{hour12}}"></paper-clock-selector> 
           </section>
-          <section name="minute" id$="selectMinute">
+          <section name="minutes" id$="selectMinute">
             <paper-clock-selector id="minuteSelector" count="60" selected="{{minute}}" zero-pad use-zero></paper-clock-selector>
           </section>
         </iron-selector>
@@ -307,12 +307,19 @@ If you include this element as part of `paper-dialog`, use the class
             value: 0
           },
           /**
-           * The current period (AM/PM)
+           * The current period ('AM', 'PM')
            */
           period: {
             type: String,
             observer: '_periodChanged',
             value: 'AM'
+          },
+          /**
+           * The current selector view ('hours', 'minutes')
+           */
+          view: {
+            type: String,
+            value: 'hours'
           },
           _queryMatches: {
             type: Boolean,
@@ -328,7 +335,7 @@ If you include this element as part of `paper-dialog`, use the class
         ],
         ready: function() {
           this.isTouch = 'ontouchstart' in window;
-          this._page = 'hour';
+          this.view = 'hours';
           this.addEventListener('paper-clock-selected', this._timeSelected);
         },
         /**
@@ -458,12 +465,12 @@ If you include this element as part of `paper-dialog`, use the class
           this.set('narrow', this._queryMatches || this.forceNarrow);
         },
         _timeSelected: function(e) {
-          if (this._page === 'hour') {
+          if (this.view === 'hours') {
             this.hour12 = e.detail.value;
           } else {
             this.minute = e.detail.value;
           }
-          this._page = 'minute';
+          this.view = 'minutes';
         }
       });
     })();
