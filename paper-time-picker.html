@@ -70,8 +70,7 @@ If you include this element as part of `paper-dialog`, use the class
       }
       :host {
         display: block;
-        @apply(--paper-font-body1);
-        background: var(--default-background-color);
+        background-color: var(--primary-background-color);
         -webkit-touch-callout: none;
         -webkit-user-select: none;
         -khtml-user-select: none;
@@ -79,6 +78,7 @@ If you include this element as part of `paper-dialog`, use the class
         -ms-user-select: none;
         user-select: none;
         overflow: hidden;
+        @apply(--paper-font-body1);
         font-size: 14px;
       }
 
