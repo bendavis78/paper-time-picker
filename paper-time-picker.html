@@ -353,17 +353,8 @@ If you include this element as part of `paper-dialog`, use the class
         set time(timeString) {
           var oldValue = this.rawValue;
           if (!timeString) {
-            if (typeof timeString === 'undefined') {
-              // undefined basically means "reset the picker".
-              this.set('_page', 'hour');
-              // if the value is undefined, change it back to default value (midnight).
-              timeString = '0:00';
-              // make sure bound listeners get notified of the change.
-              oldValue = undefined;
-            } else {
-              // otherwise, notify any bound listeners that we're keeping the current value.
-              return;
-            }
+            this.rawValue = 0;
+            return;
           }
 
           var time = this.parseTime(timeString);
@@ -434,7 +425,7 @@ If you include this element as part of `paper-dialog`, use the class
           this.minute = minute;
         },
         _timeChanged: function() {
-          this.fire('time-changed', {hour: this.hour, minute: this.minute});
+          this.fire('time-changed', this.time);
         },
         _periodChanged: function(period) {
           if (isNaN(parseInt(this.hour)) || isNaN(parseInt(this.minute))) {
