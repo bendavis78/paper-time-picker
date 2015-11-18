@@ -35,7 +35,8 @@
     <section>
       <h1>{{time}}</h1>
       <paper-button class="btn" on-tap="showDialog" raised>Change Time</paper-button>
-      <paper-dialog id="dialog" class="paper-time-picker-dialog" modal>
+      <paper-dialog id="dialog" class="paper-time-picker-dialog" modal on-iron-overlay-closed="dismiss">
+        <!-- we use a one-way binding here to let us explicitly set the time when the dialog is confiremd -->
         <paper-time-picker id="picker" time="[[time]]"></paper-time-picker>
         <div class="buttons">
           <paper-button dialog-dismiss>CANCEL</paper-button>
@@ -53,7 +54,10 @@
       scope.showDialog = function() {
         this.$.dialog.toggle();
       };
-      scope.time = "3:30 pm";
+      scope.dismiss = function() {
+        scope.$.picker.view = 'hours';
+      };
+      scope.time = '3:30 pm';
     });
   </script>
 </body>

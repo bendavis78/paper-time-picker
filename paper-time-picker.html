@@ -238,11 +238,8 @@ If you include this element as part of `paper-dialog`, use the class
   </template>
   <script>
     (function() {
-      function warn() {
-        if (window.console) {
-          console.warn.apply(console, arguments);
-        }
-      }
+      var noop = function() {};
+      var console = window.console || {warn: noop, log: noop, error: noop};
 
       Polymer({
         is: 'paper-time-picker',
@@ -276,10 +273,20 @@ If you include this element as part of `paper-dialog`, use the class
             reflectToAttribute: true
           },
           /**
+           * The current time as a formatted string
+           */
+          time: {
+            type: String,
+            notify: true,
+            value: '12:00 AM',
+            observer: '_timeChanged'
+          },
+          /**
            * The time value as the number of minutes from midnight
            */
           rawValue: {
             type: Number,
+            notify: true,
             value: 0,
             observer: '_rawValueChanged'
           },
@@ -288,6 +295,7 @@ If you include this element as part of `paper-dialog`, use the class
            */
           hour: {
             type: Number,
+            notify: true,
             observer: '_hourChanged',
             value: 0
           },
@@ -296,6 +304,7 @@ If you include this element as part of `paper-dialog`, use the class
            */
           hour12: {
             type: Number,
+            notify: true,
             observer: '_hour12Changed'
           },
           /**
@@ -303,6 +312,7 @@ If you include this element as part of `paper-dialog`, use the class
            */
           minute: {
             type: Number,
+            notify: true,
             observer: '_minuteChanged',
             value: 0
           },
@@ -311,6 +321,7 @@ If you include this element as part of `paper-dialog`, use the class
            */
           period: {
             type: String,
+            notify: true,
             observer: '_periodChanged',
             value: 'AM'
           },
@@ -319,7 +330,9 @@ If you include this element as part of `paper-dialog`, use the class
            */
           view: {
             type: String,
-            value: 'hours'
+            notify: true,
+            value: 'hours',
+            observer: '_viewChanged'
           },
           _queryMatches: {
             type: Boolean,
@@ -331,7 +344,8 @@ If you include this element as part of `paper-dialog`, use the class
           Polymer.IronResizableBehavior
         ],
         observers: [
-          '_timeChanged(rawValue)'
+          '_updateRawValue(hour, minute)',
+          '_updateTime(hour, minute)'
         ],
         ready: function() {
           this.isTouch = 'ontouchstart' in window;
@@ -339,49 +353,26 @@ If you include this element as part of `paper-dialog`, use the class
           this.addEventListener('paper-clock-selected', this._timeSelected);
         },
         /**
-         * Get/set the selected time
-         * @attribute time
-         * @type String
-         * @default '00:00'
+         * @param {number} hour The hour from 0-23
+         * @param {number} minute The minute from 0-60
+         * @returns {string} The formatted string
          */
-        get time() {
-          if (isNaN(parseInt(this.rawValue))) {
-            return undefined;
-          }
-          return this.formatTime(this.hour, this.minute);
-        },
-        set time(timeString) {
-          var oldValue = this.rawValue;
-          if (!timeString) {
-            this.rawValue = 0;
-            return;
-          }
-
-          var time = this.parseTime(timeString);
-          var rawValue = (time.hour * 60) + time.minute;
-
-          if (rawValue === oldValue) {
-            return;
-          }
-
-          this.rawValue = rawValue;
-
-          // notify listeners of value change
-          this.async(function() {
-            this._timeChanged();
-          });
-        },
-        formatTime(hour, minute) {
+        formatTime: function(hour, minute) {
           var period = (hour % 24) < 12 ? 'AM' : 'PM';
           hour = hour % 12 || 12;
           minute = ('0' + minute).substr(-2);
           return hour + ':' + minute + ' ' + period;
         },
-        parseTime: function(timeString) {
+        /**
+         * @param {string} timeString
+         * @param {boolean} raw Return raw value (minutes since midnight) instead of object
+         * @returns {Object} An object in the form of {hour: [0-23], minute: [0-59]}
+         */
+        parseTime: function(timeString, raw) {
           var pattern = /^\s*(\d{1,2}):?(\d{2})(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/;
           var match = timeString.match(pattern);
           if (!match) {
-            warn('Invalid time:', timeString);
+            console.warn('Invalid time:', timeString);
             return;
           }
           var hour = parseInt(match[1]);
@@ -392,49 +383,91 @@ If you include this element as part of `paper-dialog`, use the class
           } else if (period === 'AM' && hour === 12) {
             hour = 0;
           }
+          if (raw) {
+            return (hour * 60) + minute;
+          }
           return {hour: hour, minute: minute};
         },
+        /**
+         * Toggle between AM/PM
+         */
         togglePeriod: function() {
           this.period = (this.period === 'AM') ? 'PM' : 'AM';
         },
-        _rawValueChanged: function(value) {
-          this.hour = Math.floor(value / 60);
+        _resetValue: function(prop, oldValue) {
+          if (typeof oldValue !== 'undefined') {
+            this[prop] = oldValue;
+          }
+        },
+        _timeChanged: function(timeString, oldValue) {
+          var time = this.parseTime(timeString);
+          if (!time) {
+            this._resetValue('time', oldValue);
+            return;
+          }
+          this.hour = time.hour;
+          this.minute = time.minute;
+        },
+        _updateTime: function(hour, minute) {
+          this.time = this.formatTime(hour, minute);
+        },
+        _rawValueChanged: function(value, oldValue) {
+          value = parseInt(value);
+          if (isNaN(value)) {
+            this._resetValue('rawValue', oldValue);
+            return;
+          }
+          this.hour = Math.floor(value / 60) % 24;
           this.minute = value % 60;
         },
-        _hour12Changed: function(hour12) {
+        _updateRawValue: function(hour, minute) {
+          this.rawValue = (hour * 60) + minute;
+        },
+        _hour12Changed: function(hour12, oldValue) {
+          hour12 = parseInt(hour12);
+          if (isNaN(hour12)) {
+            this._resetValue('hour12', oldValue);
+            return;
+          }
           var add = (this.period === 'PM' ? 12 : 0);
           this.hour = ((hour12 % 12) + add) % 24;
         },
         _hourChanged: function(hour, oldValue) {
-          hour = parseInt(hour);
-          if (isNaN(hour) && !hour) {
-            return;
-          }
+          hour = parseInt(hour) % 24;
           if (isNaN(hour)) {
-            warn('Invalid number:', hour);
-            this.hour = oldValue;
+            console.warn('Invalid number:', arguments[0]);
+            this._resetValue('hour', oldValue);
             return;
           }
-          hour = parseFloat(hour) % 24;
           this.hour = hour;
           this.hour12 = this._twelveHour(hour);
           this.period = ['PM', 'AM'][+(hour < 12)];
         },
-        _minuteChanged: function(minute) {
-          minute = parseFloat(minute) % 60;
+        _minuteChanged: function(minute, oldValue) {
+          minute = parseInt(minute) % 60;
+          if (isNaN(minute)) {
+            console.warn('Invalid number:', arguments[0]);
+            this._resetValue('minute', oldValue);
+            return;
+          }
           this.minute = minute;
         },
-        _timeChanged: function() {
-          this.fire('time-changed', this.time);
-        },
-        _periodChanged: function(period) {
-          if (isNaN(parseInt(this.hour)) || isNaN(parseInt(this.minute))) {
+        _periodChanged: function(period, oldValue) {
+          period = period ? period.toString().toUpperCase()[0] + 'M' : '';
+          if (period !== 'AM' && period !== 'PM') {
+            console.warn('invalid period: ', arguments[0]);
+            this._resetValue('period', oldValue);
             return;
           }
           if (period === 'AM' &&  this.hour >= 12) {
             this.hour -= 12;
           } else if (period === 'PM' && this.hour < 12) {
             this.hour += 12;
+          }
+        },
+        _viewChanged: function(view) {
+          if (view !== 'hours' && view !== 'minutes') {
+            this.view = 'hours';
           }
         },
         _zeroPad: function(value, length) {
