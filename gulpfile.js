@@ -16,6 +16,7 @@ var bump = require('gulp-bump');
 var tagVersion = require('gulp-tag-version');
 var git = require('gulp-git');
 var filter = require('gulp-filter');
+var portfinder = require('portfinder');
 
 function getPackage() {
   return JSON.parse(fs.readFileSync('bower.json', 'utf8')); 
@@ -90,7 +91,13 @@ gulp.task('serve', ['bower'], function () {
     }
   };
   opts.server.routes[pkgRoot] = '.';
-  browserSync.init(opts);
+
+  portfinder.basePort = 3003;
+  portfinder.getPort(function (err, port) {
+    opts.port = port;
+    console.log('using port: ' + port);
+    browserSync.init(opts);
+  });
 
   gulp.watch(['**/*.html']).on('change', reload);
   gulp.watch(['**/*.css']).on('change', reload);

@@ -42,13 +42,8 @@ If you include this element as part of `paper-dialog`, use the class
 -->
 
 <style is="custom-style">
-  /* Allow easy styling of a paper-dialog containing paper-time-picker */
+  /* Allow easy styling of paper-time-picker-dialog */
   :root {
-    --paper-time-picker-dialog-picker: {
-      margin-top: 0;
-      margin-bottom: 0;
-      padding: 0;
-    };
     --paper-time-picker-dialog: {
       margin: 0;
       max-height: 520px !important;
@@ -58,7 +53,22 @@ If you include this element as part of `paper-dialog`, use the class
     @apply(--paper-time-picker-dialog);
   }
   :root .paper-time-picker-dialog > paper-time-picker {
+    margin-top: 0;
+    padding: 0;
+    --paper-calendar: {
+      padding-bottom: 0;
+      @apply(--paper-time-picker-dialog-calendar);
+    };
     @apply(--paper-time-picker-dialog-picker);
+  }
+  :root .paper-time-picker-dialog > paper-time-picker:not([narrow]) {
+    --paper-time-picker-heading: {
+      margin-bottom: -56px;
+      @apply(--paper-time-picker-dialog-heading);
+    };
+    --paper-time-picker-clock: {
+      padding-bottom: 4px;
+    }
   }
 </style>
 
@@ -77,118 +87,79 @@ If you include this element as part of `paper-dialog`, use the class
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
-        overflow: hidden;
         @apply(--paper-font-body1);
         font-size: 14px;
       }
 
+      /** Landscape ******************/
       #timePicker {
-        height: 100%;
+        width: 512px;
+        height: 248px;
         @apply(--layout-horizontal);
-      }
-      :host([narrow]) #timePicker {
-        @apply(--layout-vertical);
-      }
-
-      /** Horizontal ******************/
-      :host {
-        width: 520px;
-        height: 240px;
       }
       #heading {
-        width: 270px;
-        height: 240px;
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
-        @apply(--layout-center-justified);
-      }
-      #clockArea {
-        margin: 12px 22px;
-        @apply(--layout-vertical);
-        @apply(--layout-flex);
+        width: 168px;
+        @apply(--paper-time-picker-heading);
       }
 
       /** Narrow *********************/
-      :host([narrow]) {
-        width: 270px;
-        height: 366px;
+      :host([narrow]) #timePicker {
+        width: 328px;
+        height: 428px;
+        @apply(--layout-vertical);
       }
       :host([narrow]) #heading {
+        width: auto;
         height: 96px;
-      }
-      :host([narrow]) #clock {
-        margin: 10px 18px;
+        padding: 16px 24px;
       }
 
       /** Heading ********************/
       #heading {
-        color: var(--light-primary-color);
+        padding: 16px;
+        box-sizing: border-box;
+        color: var(--light-primary-color); 
         background: var(--default-primary-color);
+        @apply(--layout-vertical);
+        @apply(--layout-center-center);
+      }
+      #heading > iron-selector {
+        margin-top: 10px;
       }
       #heading .time {
-        font-size: 0;
-        width: 200px;
-        text-align: right;
+        @apply(--paper-font-display2);
+        @apply(--layout-horizontal);
+        @apply(--layout-end-justified);
+        width: 5.34ex;
+        letter-spacing: .13ex !important;
       }
-      #heading .time .iron-selected {
+      #heading .iron-selected {
         color: var(--text-primary-color);
       }
-      #heading .time .period {
-        @apply(--paper-font-title);
-        padding-left: 4px;
-        line-height: 33px !important;
+      #heading .period {
+        font-weight: 600;
+        @apply(--paper-font-subhead);
       }
-      #heading .time div {
-        @apply(--paper-font-display3);
-        display: inline-block;
-        padding: 2px;
-      }
-      #heading .time div:hover {
+      #heading .time div,
+      #heading .period div {
         cursor: pointer;
       }
 
       /** Clock *********************/
       #clockArea {
+        flex: 1;
+        background: var(--default-background-color);
+        overflow: hidden;
+        padding: 20px;
+        @apply(--paper-time-picker-clock);
+        @apply(--layout-vertical);
+      }
+      #clockArea > div {
+        flex: 1;
         position: relative;
       }
-      #selectors {
-        pointer-events: none;
-      }
-      #selectors,
-      #selectors > section,
-      #selectors > section > * {
+      #selector {
         @apply(--layout-fit);
-      }
-
-      #selectors section.iron-selected {
-        z-index: 1000;
-      }
-      #selectors section {
-        z-index: 0;
-      }
-
-      /** Period selector *************/
-      #periodSelector {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 38px;
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
-      }
-      #periodSelector .period {
-        cursor: pointer;
-        width: 36px;
-        height: 36px;
-        line-height: 38px;
-        border-radius: 100%;
-        text-align: center;
-        vertical-align: middle;
-      }
-      #periodSelector .period.iron-selected {
-        background: var(--default-primary-color);
-        color: var(--text-primary-color);
       }
 
       /** Clock transition ***********/
@@ -210,29 +181,26 @@ If you include this element as part of `paper-dialog`, use the class
         opacity: 0;
       }
     </style>
-    <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" query-matches="{{_queryMatches}}"></iron-media-query>
+    <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" 
+      query-matches="{{_queryMatches}}"></iron-media-query>
     <div id="timePicker">
-      <div id="heading">
-        <iron-selector class="time" id="timeParts" selectable="[name]" attr-for-selected="name" selected="{{view}}">
-          <div name="hours" class="hour">{{hour12}}</div>
+      <div id="heading" class$="{{_getHeadingClass('heading-content', selectedPage)}}">
+        <iron-selector class="time" selectable="[name]" attr-for-selected="name" selected="{{view}}">
+          <div name="hours" class="hour">{{_selectedHour}}</div>
           <div class="sep">:</div>
-          <div name="minutes" class="minute">{{_zeroPad(minute, 2)}}</div>
-          <div class="period" self-end on-tap="togglePeriod">{{period}}</div>
+          <div name="minutes" class="minute">{{_zeroPad(_selectedMinute, 2)}}</div>
+        </iron-selector>
+        <iron-selector class="period" attr-for-selected="name" selected="{{period}}">
+          <div name="AM">AM</div>
+          <div name="PM">PM</div>
         </iron-selector>
       </div>
       <div id="clockArea">
-        <iron-selector id="periodSelector" selected="{{period}}" attr-for-selected="name">
-          <div class="period" name="AM">AM</div>
-          <div class="period" name="PM">PM</div>
-        </iron-selector>
-        <iron-selector id="selectors" selected="{{view}}" attr-for-selected="name" activate-event="">
-          <section name="hours" id$="selectHour">
-            <paper-clock-selector id="hourSelector" count="12" selected="{{hour12}}"></paper-clock-selector> 
-          </section>
-          <section name="minutes" id$="selectMinute">
-            <paper-clock-selector id="minuteSelector" count="60" selected="{{minute}}" zero-pad use-zero></paper-clock-selector>
-          </section>
-        </iron-selector>
+        <div>
+          <paper-clock-selector id="selector" count="{{_clockCount}}" step="{{_clockStep}}"
+            use-zero$="{{_clockUseZero}}" zero-pad$="{{_clockZeroPad}}" 
+            selected="{{_clockSelected}}"></paper-clock-selector> 
+        </div>
       </div>
     </div>
   </template>
@@ -248,32 +216,12 @@ If you include this element as part of `paper-dialog`, use the class
         is: 'paper-time-picker',
         properties: {
           /**
-           * Maximum screen width at which the picker uses a vertical layout
-           * @attribute responsiveWidth
-           * @type string
-           * @default '640px'
+           * The selected time
            */
-          responsiveWidth: {
+          time: {
             type: String,
-            value: '640px'
-          },
-          /**
-           * Force narrow layout
-           */
-          forceNarrow: {
-            type: Boolean,
-            value: false
-          },
-          narrow: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false,
-            notify: true,
-          },
-          isTouch: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
+            value: '00:00',
+            observer: '_timeChanged' 
           },
           /**
            * The time value as the number of minutes from midnight
@@ -321,6 +269,31 @@ If you include this element as part of `paper-dialog`, use the class
             type: String,
             value: 'hours'
           },
+          /**
+           * Maximum screen width at which the picker uses a vertical layout
+           */
+          responsiveWidth: {
+            type: String,
+            value: '640px'
+          },
+          /**
+           * Force narrow layout
+           */
+          forceNarrow: {
+            type: Boolean,
+            value: false
+          },
+          narrow: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false,
+            notify: true,
+          },
+          isTouch: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          },
           _queryMatches: {
             type: Boolean,
             value: false,
@@ -331,45 +304,29 @@ If you include this element as part of `paper-dialog`, use the class
           Polymer.IronResizableBehavior
         ],
         observers: [
-          '_timeChanged(rawValue)'
+          '_updateClock(view, hour12, minute)',
+          '_clockSelectedChanged(view, _clockSelected)'
         ],
         ready: function() {
           this.isTouch = 'ontouchstart' in window;
           this.view = 'hours';
           this.addEventListener('paper-clock-selected', this._timeSelected);
         },
-        /**
-         * Get/set the selected time
-         * @attribute time
-         * @type String
-         * @default '00:00'
-         */
-        get time() {
-          if (isNaN(parseInt(this.rawValue))) {
-            return undefined;
-          }
-          return this.formatTime(this.hour, this.minute);
-        },
-        set time(timeString) {
-          var oldValue = this.rawValue;
-          if (!timeString) {
+        _timeChanged: function(time) {
+          if (!time) {
             this.rawValue = 0;
             return;
           }
 
-          var time = this.parseTime(timeString);
-          var rawValue = (time.hour * 60) + time.minute;
-
-          if (rawValue === oldValue) {
+          var parsed = this.parseTime(time);
+          var cleanedTime = this.formatTime(parsed.hour, parsed.minute);
+          if (cleanedTime !== time) {
+            this.time = cleanedTime;
             return;
           }
-
-          this.rawValue = rawValue;
-
-          // notify listeners of value change
-          this.async(function() {
-            this._timeChanged();
-          });
+          this.set('_selectedHour', parsed.hour);
+          this.set('_selectedMinute', parsed.minute);
+          this.rawValue = (parsed.hour * 60) + parsed.minute;
         },
         formatTime(hour, minute) {
           var period = (hour % 24) < 12 ? 'AM' : 'PM';
@@ -400,6 +357,7 @@ If you include this element as part of `paper-dialog`, use the class
         _rawValueChanged: function(value) {
           this.hour = Math.floor(value / 60);
           this.minute = value % 60;
+          this.time = this.formatTime(this.hour, this.minute);
         },
         _hour12Changed: function(hour12) {
           var add = (this.period === 'PM' ? 12 : 0);
@@ -424,9 +382,6 @@ If you include this element as part of `paper-dialog`, use the class
           minute = parseFloat(minute) % 60;
           this.minute = minute;
         },
-        _timeChanged: function() {
-          this.fire('time-changed', this.time);
-        },
         _periodChanged: function(period) {
           if (isNaN(parseInt(this.hour)) || isNaN(parseInt(this.minute))) {
             return;
@@ -435,6 +390,30 @@ If you include this element as part of `paper-dialog`, use the class
             this.hour -= 12;
           } else if (period === 'PM' && this.hour < 12) {
             this.hour += 12;
+          }
+        },
+        _updateClock: function(view, hour12, minute) {
+          this.$.selector.animated = true;
+          if (view === 'hours') {
+            this.set('_clockCount', 12);
+            this.set('_clockStep', 1);
+            this.set('_clockUseZero', false);
+            this.set('_clockZeroPad', false);
+            this.set('_clockSelected', hour12);
+          } else {
+            this.set('_clockCount', 60);
+            this.set('_clockStep', 5);
+            this.set('_clockUseZero', true);
+            this.set('_clockZeroPad', true);
+            this.set('_clockSelected', minute);
+          }
+          this.$.selector.animated = false;
+        },
+        _clockSelectedChanged: function(view, selected) {
+          if (view === 'hours') {
+            this.set('_selectedHour', selected);
+          } else {
+            this.set('_selectedMinute', selected);
           }
         },
         _zeroPad: function(value, length) {
