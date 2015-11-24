@@ -204,7 +204,9 @@
           }.bind(this), this.$.clockHand);
 
           this.$.clock.classList.add('animating');
-          this._setHandRotation(rotate);
+          this.async(function() {
+            this._setHandRotation(rotate);
+          });
 
         },
         _setHandRotation: function(deg) {
