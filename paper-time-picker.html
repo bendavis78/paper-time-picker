@@ -471,7 +471,7 @@ If you include this element as part of `paper-dialog`, use the class
                 this._selecting = true;
                 this.view = 'minutes';
                 this._selecting = false;
-              }.bind(this), 200);
+              }.bind(this), 100);
               this.$.hourClock.removeEventListener('paper-clock-transition-end', showMinutes);
             }.bind(this);
 

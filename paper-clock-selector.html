@@ -81,7 +81,7 @@
       }
       #clock.animating #clockHand, 
       #clock.animating #clipCircle {
-        transition: transform 200ms ease-in;
+        transition: transform 150ms ease-in;
       }
     </style>
     <svg version="1.1" id="clock">
@@ -350,31 +350,20 @@
           if (!this._radius) {
             return;
           }
-          var r = this._radius;
+
+          this._selectorOuter = this._radius - this._padding * 2;
+          this._selectorInner = this._selectorOuter - this._selectorSize * 2;
+          var selectorCenter = this._selectorOuter - this._selectorSize;
+
+          var numbers = this._numbers;
           var angle = (360 / this.count) * (Math.PI / 180);
 
-          this._selectorOuter = r - this._padding * 2;
-          this._selectorInner = this._selectorOuter - this._selectorSize * 2;
-
-          var selectorCenter = this._selectorOuter - this._selectorSize;
-          var numbers = this._numbers;
-
-          var sin, cos, sinA, cosA, sinB, cosB, a, aA, aB;
+          var a, number;
           for (var i=0; i<this.count; i++) {
             a = angle * i;
-            aA = a - (angle / 2);
-            aB = a + (angle / 2);
-
-            sin = Math.sin(a);
-            cos = Math.cos(a);
-            sinA = Math.sin(aA);
-            cosA = Math.cos(aA);
-            sinB = Math.sin(aB);
-            cosB = Math.cos(aB);
-
-            var number = numbers[i];
-            number.x = r + (sin * selectorCenter);
-            number.y = r - (cos * selectorCenter);
+            number = numbers[i];
+            number.x = this._radius + (Math.sin(a) * selectorCenter);
+            number.y = this._radius - (Math.cos(a) * selectorCenter);
             this._updateNumber(number);
           }
           this._handX = this._numbers[0].x;
