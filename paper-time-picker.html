@@ -355,7 +355,7 @@ If you include this element as part of `paper-dialog`, use the class
         _updateTime: function(hour, minute) {
           this.rawValue = (hour * 60) + minute;
         },
-        formatTime(hour, minute) {
+        formatTime: function(hour, minute) {
           var period = (hour % 24) < 12 ? 'AM' : 'PM';
           hour = hour % 12 || 12;
           minute = ('0' + minute).substr(-2);
