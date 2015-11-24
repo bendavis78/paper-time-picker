@@ -248,6 +248,7 @@ If you include this element as part of `paper-dialog`, use the class
           time: {
             type: String,
             value: '00:00',
+            notify: true,
             observer: '_timeChanged' 
           },
           /**
@@ -256,6 +257,7 @@ If you include this element as part of `paper-dialog`, use the class
           rawValue: {
             type: Number,
             value: 0,
+            notify: true,
             observer: '_rawValueChanged'
           },
           /**
@@ -264,6 +266,7 @@ If you include this element as part of `paper-dialog`, use the class
           hour: {
             type: Number,
             observer: '_hourChanged',
+            notify: true,
             value: 0
           },
           /**
@@ -271,6 +274,7 @@ If you include this element as part of `paper-dialog`, use the class
            */
           hour12: {
             type: Number,
+            notify: true,
             observer: '_hour12Changed'
           },
           /**
@@ -278,6 +282,7 @@ If you include this element as part of `paper-dialog`, use the class
            */
           minute: {
             type: Number,
+            notify: true,
             observer: '_minuteChanged',
             value: 0
           },
@@ -286,6 +291,7 @@ If you include this element as part of `paper-dialog`, use the class
            */
           period: {
             type: String,
+            notify: true,
             observer: '_periodChanged',
             value: 'AM'
           },
@@ -294,6 +300,7 @@ If you include this element as part of `paper-dialog`, use the class
            */
           view: {
             type: String,
+            notify: true,
             value: 'hours',
             observer: '_viewChanged'
           },
