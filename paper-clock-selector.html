@@ -177,6 +177,7 @@
 
           animate = typeof(animate) === 'undefined' ? this.animated : animate;
           animate = this._radius ? animate : false;
+
           this.$.clock.classList.remove('animating');
 
           var current, transform = this.$.clockHand.style.transform;
@@ -207,6 +208,34 @@
           this.async(function() {
             this._setHandRotation(rotate);
           });
+
+        },
+        _setHandRotation: function(deg) {
+          var hasLabel = ((deg / 360) * this.count) % this.step === 0 ;
+          var transform = 'rotate(' + deg + 'deg)';
+          this.$.clockHand.classList[['remove', 'add'][+hasLabel]]('no-dot');
+          this.$.clockHand.style.transform = transform;
+          this.$.clipCircle.style.transform = transform;
+        },
+        _selectedChanged: function(selected) {
+          if (!this.count || isNaN(selected)) {
+            return;
+          }
+          var value = selected % this.count;
+          var idx = value;
+
+          this._once(this._transitionEvent, function() {
+            if (callback) {
+              callback();
+            }
+            this.$.clock.classList.remove('animating');
+            this.fire('paper-clock-transition-end');
+          }.bind(this), this.$.clockHand);
+
+          this.$.clock.classList.add('animating');
+          this.async(function() {
+            this._setHandRotation(rotate);
+          }.bind(this));
 
         },
         _setHandRotation: function(deg) {
@@ -337,9 +366,6 @@
           this._selectorDotSize = 3;
           this._padding = 2;
           this._positionClockPoints();
-          this.async(function() {
-            this._bounds = this.$.face.getBoundingClientRect();
-          });
 
           this._resizedCache = this._radius;
 
@@ -347,6 +373,12 @@
           this.$.clock.style.height = radius * 2;
           this.$.clockHand.style.transformOrigin = radius + 'px ' + radius + 'px';
           this.$.clipCircle.style.transformOrigin = radius + 'px ' + radius + 'px';
+
+          this.async(function() {
+            // FIXME: this is hacky, but for some reason we need to wait a bit
+            // to get an accurate measurement
+            this._bounds = this.$.face.getBoundingClientRect();
+          }.bind(this), 150);
         },
         _positionClockPoints: function() {
           if (!this._radius) {
@@ -405,9 +437,9 @@
           // use coords to find angle from 12 o'clock position
           var theta = Math.atan(y / x);
           theta = (Math.PI / 2) + (x < 0 ? theta + Math.PI : theta);
+          var intervalRad = (360 / this.count) * (Math.PI / 180);
 
           // determine the selected number
-          var intervalRad = (360 / this.count) * (Math.PI / 180);
           this.selected = Math.round(theta / intervalRad);
 
           /* only fire selected when we've tapped or stopped tracking */

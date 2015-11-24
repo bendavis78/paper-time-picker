@@ -60,6 +60,9 @@ If you include this element as part of `paper-dialog`, use the class
   :root .paper-time-picker-dialog > paper-time-picker {
     margin-top: 0;
     padding: 0;
+    --paper-time-picker: {
+      height: 248px;
+    };
     --paper-calendar: {
       padding-bottom: 0;
       @apply(--paper-time-picker-dialog-calendar);
@@ -106,8 +109,9 @@ If you include this element as part of `paper-dialog`, use the class
       /** Landscape ******************/
       #timePicker {
         width: 512px;
-        height: 248px;
+        height: 304px;
         @apply(--layout-horizontal);
+        @apply(--paper-time-picker);
       }
       #heading {
         width: 168px;
@@ -216,11 +220,11 @@ If you include this element as part of `paper-dialog`, use the class
             entry-animation="fade-in-animation" exit-animation="fade-out-animation">
             <neon-animatable class="fit" name="hours">
               <paper-clock-selector class="clock fit" id="hourClock" count="12" step="1"
-                animated selected="{{hour12}}"></paper-clock-selector> 
+                animated="[[animated]]" selected="{{hour12}}"></paper-clock-selector> 
             </neon-animatable>
             <neon-animatable class="fit" name="minutes">
               <paper-clock-selector class="clock fit" id="minuteClock" count="60" step="5"
-                animated use-zero zero-pad selected="{{minute}}"></paper-clock-selector> 
+                animated="[[animated]]" use-zero zero-pad selected="{{minute}}"></paper-clock-selector> 
             </neon-animatable>
           </neon-animated-pages>
         </div>
@@ -304,6 +308,13 @@ If you include this element as part of `paper-dialog`, use the class
            * Force narrow layout
            */
           forceNarrow: {
+            type: Boolean,
+            value: false
+          },
+          /**
+           * Whether or not to animate the clock hand between selections
+           */
+          animated: {
             type: Boolean,
             value: false
           },
@@ -485,12 +496,15 @@ If you include this element as part of `paper-dialog`, use the class
           }
         },
         _resizeHandler: function() {
-          if (!this.offsetWidth) {
+          if (!this.offsetWidth || this._resizing) {
             return;
           }
           this.updateStyles();
-          this.$.hourClock._updateSize();
-          this.$.minuteClock._updateSize();
+          this.async(function() {
+            this._resizing = true;
+            this.$.pages._notifyPageResize();
+            this._resizing = false;
+          }.bind(this));
         }
       });
     })();
