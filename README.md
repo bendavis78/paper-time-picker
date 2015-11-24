@@ -21,20 +21,21 @@ Default picker:
 Setting the initial time to 4:20pm (note that hours given as 24-hour):
 
 ```html
-<paper-time-picker hour="16" minute="20"></paper-time-picker>
+<paper-time-picker time="4:20pm"></paper-time-picker>
 ```
 
 If you include this element as part of `paper-dialog`, use the class
 `"paper-time-picker-dialog"` on the dialog in order to give it proper styling.
 
 ```html
-<paper-action-dialog id="dialog" modal class="paper-time-picker-dialog">
-  <paper-time-picker id="timePicker"></paper-time-picker>
+<paper-dialog id="dialog" modal class="paper-time-picker-dialog"
+  on-iron-overlay-closed="dismissDialog">
+  <paper-time-picker id="timePicker" time="[[time]]"></paper-time-picker>
   <div class="buttons">
     <paper-button dialog-dismiss>Cancel</paper-button>
     <paper-button dialog-confirm>OK</paper-button>
   </div>
-</paper-action-dialog>
+</paper-dialog>
 ```
 
 ---

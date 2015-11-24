@@ -11,8 +11,9 @@
   <template>
     <style>
       :host * {
-        --webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
       }
+
       :host {
         display: block;
         @apply(--paper-font-body1);
@@ -33,7 +34,7 @@
       #clock * {
         pointer-events: fill;
       }
-      #face .bg {
+      #face {
         fill: var(--divider-color);
         cursor: default;
       }
@@ -46,17 +47,17 @@
       .line {
         stroke: var(--default-primary-color);
       }
-      .pointer {
+      .clock-hand {
         z-index: 1;
       }
-      .pointer-large {
+      .disc-large {
         z-index: 2;
         fill: var(--default-primary-color);
       }
-      .pointer-small {
+      .disc-small {
         fill: var(--text-primary-color);
       }
-      .pointer.on-number .pointer-small {
+      .clock-hand.no-dot .disc-small {
         fill: none;
         stroke: none;
       }
@@ -72,33 +73,29 @@
       .number text.clipped {
         z-index: 4;
         fill: var(--text-primary-color);
-        clip-path: url('#pointerClip');
+        clip-path: url('#handClip');
       }
       .select-area {
+        cursor: pointer;
         fill-opacity: 0;
       }
-      .select-area:hover {
-        cursor: pointer;
-      }
-      #clock.animating #pointer, 
+      #clock.animating #clockHand, 
       #clock.animating #clipCircle {
         transition: transform 200ms ease-in;
       }
     </style>
     <svg version="1.1" id="clock">
       <defs>
-        <clippath id="pointerClip">
-          <circle id="clipCircle" r$="{{_selectorSize}}" cx$="{{_pointerX}}" cy$="{{_pointerY}}"></circle>
-        </clippath>
+        <clipPath id="handClip">
+          <circle id="clipCircle" r$="{{_selectorSize}}" cx$="{{_handX}}" cy$="{{_handY}}"></circle>
+        </clipPath>
       </defs>
-      <g id="face">
-        <circle class="bg" r$="{{_radius}}" cx$="{{_radius}}" cy$="{{_radius}}"></circle>
-        <g id="pointer" class="pointer">
-          <circle class="dot" r="2" cx$="{{_radius}}" cy$="{{_radius}}"></circle>
-          <line class="line" x1$="{{_radius}}" y1$="{{_radius}}" x2$="{{_pointerX}}" y2$="{{_pointerY}}"></line>
-          <circle class="pointer-large" r$="{{_selectorSize}}" cx$="{{_pointerX}}" cy$="{{_pointerY}}"></circle>
-          <circle class="pointer-small" r$="{{_selectorDotSize}}" cx$="{{_pointerX}}" cy$="{{_pointerY}}"></circle>
-        </g>
+      <circle id="face" class="bg" r$="{{_radius}}" cx$="{{_radius}}" cy$="{{_radius}}"></circle>
+      <g id="clockHand" class="clock-hand">
+        <circle class="dot" r="2" cx$="{{_radius}}" cy$="{{_radius}}"></circle>
+        <line class="line" x1$="{{_radius}}" y1$="{{_radius}}" x2$="{{_handX}}" y2$="{{_handY}}"></line>
+        <circle class="disc-large" r$="{{_selectorSize}}" cx$="{{_handX}}" cy$="{{_handY}}"></circle>
+        <circle class="disc-small" r$="{{_selectorDotSize}}" cx$="{{_handX}}" cy$="{{_handY}}"></circle>
       </g>
       <g id="numbers"></g>
       <path class="select-area" on-tap="_onTouch" on-track="_onTouch"
@@ -110,10 +107,25 @@
       var SVG_NS = 'http://www.w3.org/2000/svg';
 
       // radius values as a percentage of the clock-face radius
-      var SELECTOR_SIZE = 16;
-      var SELECTOR_DOT_SIZE = 1.5;
-      var CLOCK_FACE_PADDING = 2;
       var MAX_VISIBLE = 12;
+
+      var normalizeAngle = function(a) {
+        // convert angle to a positive value between 0 and 360
+        a = a ? a % 360 : 0;
+        return a < 0 ? a + 360 : a;
+      };
+      function getShortestAngle(from, to) {
+        var angle, offset = 0;
+        from = from || 0;
+        angle = normalizeAngle(from);
+        if ( angle < 180 && (to > (angle + 180)) ) {
+          offset = -360; 
+        }
+        if ( angle >= 180 && (to <= (angle - 180)) ) {
+          offset = 360; 
+        }
+        return from + offset + (to - angle);
+      }
 
       Polymer({
         is: 'paper-clock-selector',
@@ -121,7 +133,8 @@
           selected: {
             type: Number,
             notify: true,
-            value: 0
+            value: 0,
+            observer: '_selectedChanged'
           },
           count: {
             type: Number,
@@ -150,8 +163,7 @@
           'iron-resize': '_updateSize'
         },
         observers: [
-          '_populate(count, step, useZero)',
-          '_selectedChanged(selected, count)'
+          '_populate(count, step, useZero)'
         ],
         behaviors: [
           Polymer.IronResizableBehavior
@@ -160,11 +172,53 @@
           this._transitionEvent = this.style.WebkitTransition ? 'transitionEnd' : 'webkitTransitionEnd';
           this._populate();
         },
-        _selectedChanged: function(selected, count) {
-          if (!count || isNaN(selected)) {
+        setClockHand: function(deg, animate, callback) {
+          deg = normalizeAngle(deg);
+
+          animate = typeof(animate) === 'undefined' ? this.animated : animate;
+          animate = this._radius ? animate : false;
+          this.$.clock.classList.remove('animating');
+
+          var current, transform = this.$.clockHand.style.transform;
+          if (transform) {
+            current = parseInt(transform.match(/rotate\((-?\d+)deg\)/)[1]);
+          } else {
+            current = 0;
+          }
+
+          var rotate = getShortestAngle(current, deg);
+          if (normalizeAngle(rotate) === current) {
             return;
           }
-          var value = selected % count;
+
+          if (!animate) {
+            return this._setHandRotation(rotate);
+          }
+
+          this._once(this._transitionEvent, function() {
+            if (callback) {
+              callback();
+            }
+            this.$.clock.classList.remove('animating');
+            this.fire('paper-clock-transition-end');
+          }.bind(this), this.$.clockHand);
+
+          this.$.clock.classList.add('animating');
+          this._setHandRotation(rotate);
+
+        },
+        _setHandRotation: function(deg) {
+          var hasLabel = ((deg / 360) * this.count) % this.step === 0 ;
+          var transform = 'rotate(' + deg + 'deg)';
+          this.$.clockHand.classList[['remove', 'add'][+hasLabel]]('no-dot');
+          this.$.clockHand.style.transform = transform;
+          this.$.clipCircle.style.transform = transform;
+        },
+        _selectedChanged: function(selected) {
+          if (!this.count || isNaN(selected)) {
+            return;
+          }
+          var value = selected % this.count;
           var idx = value;
 
           if (idx === 0 && !this.useZero) {
@@ -174,8 +228,8 @@
             this.selected = value;
             return;
           }
-          this._setPointer((this.selected / count) * 360);
           this._vibrate();
+          this.setClockHand((360 / this.count) * this.selected);
         },
         _stepChanged: function(value, oldValue) {
           this._step = oldValue;
@@ -277,9 +331,9 @@
             return;
           }
           this._radius = radius;
-          this._selectorSize = radius * (SELECTOR_SIZE / 100);
-          this._selectorDotSize = radius * (SELECTOR_DOT_SIZE / 100);
-          this._padding = radius * (CLOCK_FACE_PADDING / 100);
+          this._selectorSize = 20;
+          this._selectorDotSize = 3;
+          this._padding = 2;
           this._positionClockPoints();
           this.async(function() {
             this._bounds = this.$.face.getBoundingClientRect();
@@ -289,7 +343,7 @@
 
           this.$.clock.style.width = radius * 2;
           this.$.clock.style.height = radius * 2;
-          this.$.pointer.style.transformOrigin = radius + 'px ' + radius + 'px';
+          this.$.clockHand.style.transformOrigin = radius + 'px ' + radius + 'px';
           this.$.clipCircle.style.transformOrigin = radius + 'px ' + radius + 'px';
         },
         _positionClockPoints: function() {
@@ -323,8 +377,8 @@
             number.y = r - (cos * selectorCenter);
             this._updateNumber(number);
           }
-          this._pointerX = this._numbers[0].x;
-          this._pointerY = this._numbers[0].y;
+          this._handX = this._numbers[0].x;
+          this._handY = this._numbers[0].y;
         },
         _notifyNumberChanged: function(path) {
           var propPath, props = ['x', 'y'];
@@ -348,49 +402,27 @@
           var x = event.detail.x - this._bounds.left - this._radius;
           var y = event.detail.y - this._bounds.top - this._radius;
 
+          /* only rotate while in the touch area */
           var distance = Math.abs(Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)));
           if (distance < this._selectorInner || distance > this._selectorOuter) {
             return;
           }
 
-          // find angle, rotate -90deg, then convert to a full circle value;
+          /* don't animate while tracking */
+          this.animated = event.type !== 'track';
+
+          // use coords to find angle from 12 o'clock position
           var theta = Math.atan(y / x);
           theta = (Math.PI / 2) + (x < 0 ? theta + Math.PI : theta);
 
+          // determine the selected number
           var intervalRad = (360 / this.count) * (Math.PI / 180);
-
-          // select the nearest value
           this.selected = Math.round(theta / intervalRad);
 
+          /* only fire selected when we've tapped or stopped tracking */
           if (event.type === 'tap' || event.detail.state === 'end') {
-            this.fire('paper-clock-selected', {value: this.selected});
+            this.fire('paper-clock-selected', {value: this.selected, animated: this.animated});
           }
-        },
-        _setPointer: function(deg) {
-          var onNumber = ((deg / 360) * this.count) % this.step === 0 ;
-          this._pointer = this._pointer || 0;
-          this.$.pointer.classList[['remove', 'add'][+onNumber]]('on-number');
-
-          var rotate = deg;
-          if (Math.abs(this._pointer - deg) > 180) {
-            rotate = this._pointer > deg ? deg + 360 : deg - 360;
-          } 
-
-          this._once(this._transitionEvent, function() {
-            // normalize pointer rotation degrees
-            this.$.clock.classList.remove('animating');
-            var transform = 'rotate(' + this._pointer + 'deg)';
-            this.$.pointer.style.transform = transform;
-            this.$.clipCircle.style.transform = transform;
-          }.bind(this));
-
-          if (this.animated) {
-            this.$.clock.classList.add('animating');
-          }
-          var transform = 'rotate(' + rotate  + 'deg)';
-          this.$.pointer.style.transform = transform;
-          this.$.clipCircle.style.transform = transform;
-          this._pointer = deg % 360;
         },
         _formatNumber: function(value) {
           if (this.zeroPad) {
