@@ -399,7 +399,11 @@ If you include this element as part of `paper-dialog`, use the class
         togglePeriod: function() {
           this.period = (this.period === 'AM') ? 'PM' : 'AM';
         },
-        _rawValueChanged: function(value) {
+        _rawValueChanged: function(value, oldValue) {
+          if (isNaN(parseInt(value))) {
+            this.rawValue = oldValue;
+            return;
+          }
           this.hour = Math.floor(value / 60);
           this.minute = value % 60;
           this.time = this.formatTime(this.hour, this.minute);
