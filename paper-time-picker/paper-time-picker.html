@@ -9,6 +9,7 @@
 <link rel="import" href="../neon-animation/animations/fade-in-animation.html">
 <link rel="import" href="../neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="paper-clock-selector.html">
+<link rel="import" href="paper-time-picker-dialog-style.html">
 
 <!--
 
@@ -43,48 +44,10 @@ If you include this element as part of `paper-dialog`, use the class
 @blurb Provides a responsive time picker based on the material design spec.
 @homepage http://bendavis78.github.io/paper-time-picker/
 @demo demo/index.html
-
 -->
 
-<style is="custom-style">
-  /* Allow easy styling of paper-time-picker-dialog */
-  :root {
-    --paper-time-picker-dialog: {
-      margin: 0;
-      max-height: 520px !important;
-    };
-  }
-  :root .paper-time-picker-dialog {
-    @apply(--paper-time-picker-dialog);
-  }
-  :root .paper-time-picker-dialog > paper-time-picker {
-    margin-top: 0;
-    padding: 0;
-    --paper-time-picker: {
-      height: 248px;
-    };
-    --paper-calendar: {
-      padding-bottom: 0;
-      @apply(--paper-time-picker-dialog-calendar);
-    };
-    @apply(--paper-time-picker-dialog-picker);
-  }
-  :root .paper-time-picker-dialog > paper-time-picker:not([narrow]) {
-    --paper-time-picker-heading: {
-      margin-bottom: -56px;
-      @apply(--paper-time-picker-dialog-heading);
-    };
-    --paper-time-picker-clock: {
-      padding-bottom: 4px;
-    }
-  }
-  :root .paper-time-picker-dialog > paper-time-picker[narrow] {
-    --paper-time-picker-clock: {
-      padding-top: 30px;
-      padding-bottom: 4px;
-    }
-  }
-</style>
+<!-- include dialog style at document-level for backward compatibility -->
+<style is="custom-style" include="paper-time-picker-dialog-style"></style>
 
 <dom-module id="paper-time-picker">
   <template>
