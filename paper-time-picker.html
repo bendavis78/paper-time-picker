@@ -427,7 +427,7 @@ If you include this element as part of `paper-dialog`, use the class
 
           // prevent the clock-hand transition when selecting, otherwise the 
           // extra movement would be confusing
-          if (this._selecting || !fromView || !toView) {
+          if (this._selecting || !fromView || !toView || !this.animated) {
             return;
           }
 
@@ -435,12 +435,13 @@ If you include this element as part of `paper-dialog`, use the class
           var from = clocks[fromView];
           var to = clocks[toView];
           var fromAngle = (360 / from.count) * from.selected;
+          var toAngle = (360 / to.count) * to.selected;
 
           // transition both clock hands at the same time
           to.setClockHand(fromAngle, false);
+          from.setClockHand(toAngle);
+
           this.async(function() {
-            var toAngle = (360 / to.count) * to.selected;
-            from.setClockHand(toAngle);
             to.setClockHand(toAngle, true, function() {
               this.async(function() {
                 from.setClockHand(fromAngle, false);
