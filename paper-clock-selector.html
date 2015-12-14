@@ -171,6 +171,7 @@
         ready: function() {
           this._transitionEvent = this.style.WebkitTransition ? 'transitionEnd' : 'webkitTransitionEnd';
           this._populate();
+          this._selectedChanged(this.selected);
         },
         setClockHand: function(deg, animate, callback) {
           deg = normalizeAngle(deg);
@@ -189,7 +190,7 @@
 
           var rotate = getShortestAngle(current, deg);
           if (normalizeAngle(rotate) === current) {
-            return;
+            return this._setHandRotation(current);
           }
 
           if (!animate) {
@@ -208,34 +209,6 @@
           this.async(function() {
             this._setHandRotation(rotate);
           });
-
-        },
-        _setHandRotation: function(deg) {
-          var hasLabel = ((deg / 360) * this.count) % this.step === 0 ;
-          var transform = 'rotate(' + deg + 'deg)';
-          this.$.clockHand.classList[['remove', 'add'][+hasLabel]]('no-dot');
-          this.$.clockHand.style.transform = transform;
-          this.$.clipCircle.style.transform = transform;
-        },
-        _selectedChanged: function(selected) {
-          if (!this.count || isNaN(selected)) {
-            return;
-          }
-          var value = selected % this.count;
-          var idx = value;
-
-          this._once(this._transitionEvent, function() {
-            if (callback) {
-              callback();
-            }
-            this.$.clock.classList.remove('animating');
-            this.fire('paper-clock-transition-end');
-          }.bind(this), this.$.clockHand);
-
-          this.$.clock.classList.add('animating');
-          this.async(function() {
-            this._setHandRotation(rotate);
-          }.bind(this));
 
         },
         _setHandRotation: function(deg) {
