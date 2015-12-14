@@ -435,11 +435,11 @@ If you include this element as part of `paper-dialog`, use the class
           var from = clocks[fromView];
           var to = clocks[toView];
           var fromAngle = (360 / from.count) * from.selected;
-          var toAngle = (360 / to.count) * to.selected;
 
           // transition both clock hands at the same time
           to.setClockHand(fromAngle, false);
           this.async(function() {
+            var toAngle = (360 / to.count) * to.selected;
             from.setClockHand(toAngle);
             to.setClockHand(toAngle, true, function() {
               this.async(function() {
