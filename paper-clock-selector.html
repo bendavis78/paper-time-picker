@@ -341,9 +341,8 @@
           this._positionClockPoints();
 
           this._resizedCache = this._radius;
-
-          this.$.clock.style.width = radius * 2;
-          this.$.clock.style.height = radius * 2;
+          this.$.clock.style.width = (radius * 2) + 'px';
+          this.$.clock.style.height = (radius * 2) + 'px';
           this.$.clockHand.style.transformOrigin = radius + 'px ' + radius + 'px';
           this.$.clipCircle.style.transformOrigin = radius + 'px ' + radius + 'px';
 
