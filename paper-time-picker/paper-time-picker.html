@@ -46,8 +46,9 @@ If you include this element as part of `paper-dialog`, use the class
 @demo demo/index.html
 -->
 
-<!-- include dialog style at document-level for backward compatibility -->
-<style is="custom-style" include="paper-time-picker-dialog-style"></style>
+<style is="custom-style" include="paper-time-picker-dialog-style">
+  /* include dialog style at document-level for backward compatibility */
+</style>
 
 <dom-module id="paper-time-picker">
   <template>
@@ -427,7 +428,7 @@ If you include this element as part of `paper-dialog`, use the class
 
           // prevent the clock-hand transition when selecting, otherwise the 
           // extra movement would be confusing
-          if (this._selecting || !fromView || !toView) {
+          if (this._selecting || !fromView || !toView || !this.animated) {
             return;
           }
 
@@ -439,8 +440,9 @@ If you include this element as part of `paper-dialog`, use the class
 
           // transition both clock hands at the same time
           to.setClockHand(fromAngle, false);
+          from.setClockHand(toAngle);
+
           this.async(function() {
-            from.setClockHand(toAngle);
             to.setClockHand(toAngle, true, function() {
               this.async(function() {
                 from.setClockHand(fromAngle, false);
