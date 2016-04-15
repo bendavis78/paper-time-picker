@@ -2,7 +2,7 @@
 <link rel="import" href="../iron-media-query/iron-media-query.html">
 <link rel="import" href="../iron-resizable/iron-resizable-behavior.html">
 <link rel="import" href="../iron-selector/iron-selector.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
 <link rel="import" href="../neon-animation/neon-animated-pages.html">
 <link rel="import" href="../neon-animation/neon-animatable.html">
@@ -150,14 +150,14 @@ If you include this element as part of `paper-dialog`, use the class
 
       /** Clock *********************/
       #clockArea {
-        flex: 1;
         background: var(--default-background-color);
         overflow: hidden;
+        @apply(--layout-flex);
         @apply(--paper-time-picker-clock);
         @apply(--layout-vertical);
       }
       #clockArea > div {
-        flex: 1;
+        @apply(--layout-flex);
         position: relative;
       }
       .clock {
