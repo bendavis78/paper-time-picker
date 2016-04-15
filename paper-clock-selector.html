@@ -181,7 +181,7 @@
 
           this.$.clock.classList.remove('animating');
 
-          var current, transform = this.$.clockHand.style.transform;
+          var current, transform = this._getTransform(this.$.clockHand);
           if (transform) {
             current = parseInt(transform.match(/rotate\((-?\d+)deg\)/)[1]);
           } else {
@@ -211,12 +211,21 @@
           });
 
         },
+        _getTransform: function(el) {
+          return el.style.transform | el.style.webkitTransform | el.style.msTransform;
+        },
+        _setTransform: function(el, value) {
+          el.style.msTransform = el.style.webkitTransform = el.style.transform = value;
+        },
+        _setTransformOrigin: function(el, value) {
+          el.style.msTransformOrigin = el.style.webkitTransformOrigin = el.style.transformOrigin = value;
+        },
         _setHandRotation: function(deg) {
           var hasLabel = ((deg / 360) * this.count) % this.step === 0 ;
           var transform = 'rotate(' + deg + 'deg)';
           this.$.clockHand.classList[['remove', 'add'][+hasLabel]]('no-dot');
-          this.$.clockHand.style.transform = transform;
-          this.$.clipCircle.style.transform = transform;
+          this._setTransform(this.$.clockHand, transform);
+          this._setTransform(this.$.clipCircle, transform);
         },
         _selectedChanged: function(selected) {
           if (!this.count || isNaN(selected)) {
@@ -343,8 +352,9 @@
           this._resizedCache = this._radius;
           this.$.clock.style.width = (radius * 2) + 'px';
           this.$.clock.style.height = (radius * 2) + 'px';
-          this.$.clockHand.style.transformOrigin = radius + 'px ' + radius + 'px';
-          this.$.clipCircle.style.transformOrigin = radius + 'px ' + radius + 'px';
+          var v = radius + 'px ' + radius + 'px';
+          this._setTransformOrigin(this.$.clockHand, v);
+          this._setTransformOrigin(this.$.clipCircle, v);
 
           this.async(function() {
             // FIXME: this is hacky, but for some reason we need to wait a bit
