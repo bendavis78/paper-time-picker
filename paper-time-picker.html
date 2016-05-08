@@ -468,7 +468,12 @@ If you include this element as part of `paper-dialog`, use the class
               showMinutes();
             }
 
-            this.hour12 = event.detail.value;
+            if (this.hour12 !== event.detail.value) {
+              this.hour12 = event.detail.value;
+            } else {
+              // show minutes if same hour is selected
+              showMinutes();
+            }
           }
         },
         _resizeHandler: function() {
