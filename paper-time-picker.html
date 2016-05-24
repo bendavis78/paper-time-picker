@@ -83,6 +83,9 @@ If you include this element as part of `paper-dialog`, use the class
         @apply(--layout-vertical);
         @apply(--paper-time-picker-heading);
       }
+      :host([enable-seconds]) #heading {
+        width: 200px;
+      }
       #clockArea {
         padding: 20px;
       }
@@ -99,6 +102,9 @@ If you include this element as part of `paper-dialog`, use the class
         padding: 0 48px;
         @apply(--layout-horizontal);
         @apply(--layout-end-justified);
+      }
+      :host([enable-seconds][narrow]) #heading {
+        padding: 0 16px;
       }
       :host([narrow]) #heading .time {
         margin-top: 6px;
@@ -136,6 +142,10 @@ If you include this element as part of `paper-dialog`, use the class
         width: 5.34ex;
         letter-spacing: .13ex !important;
       }
+      :host([enable-seconds]) #heading .time{
+        width: 8.5ex;
+        font-size: 40px;
+      }
       #heading .iron-selected {
         color: var(--text-primary-color);
       }
@@ -172,6 +182,10 @@ If you include this element as part of `paper-dialog`, use the class
           <div name="hours" class="hour">{{hour12}}</div>
           <div class="sep">:</div>
           <div name="minutes" class="minute">{{_zeroPad(minute, 2)}}</div>
+          <template is="dom-if" if="[[ enableSeconds ]]">
+            <div class="sep">:</div>
+            <div name="seconds" class="second">{{_zeroPad(second, 2)}}</div>
+          </template>
         </iron-selector>
         <iron-selector class="period" attr-for-selected="name" selected="{{period}}">
           <div name="AM">AM</div>
@@ -190,6 +204,12 @@ If you include this element as part of `paper-dialog`, use the class
               <paper-clock-selector class="clock fit" id="minuteClock" count="60" step="5"
                 animated="[[animated]]" use-zero zero-pad selected="{{minute}}"></paper-clock-selector> 
             </neon-animatable>
+            <template is="dom-if" if="[[ enableSeconds ]]">
+              <neon-animatable class="fit" name="seconds">
+                <paper-clock-selector class="clock fit" id="secondClock" count="60" step="5"
+                  animated="[[animated]]" use-zero zero-pad selected="{{second}}"></paper-clock-selector> 
+              </neon-animatable>
+            </template>
           </neon-animated-pages>
         </div>
       </div>
@@ -216,7 +236,7 @@ If you include this element as part of `paper-dialog`, use the class
             observer: '_timeChanged' 
           },
           /**
-           * The time value as the number of minutes from midnight
+           * The time value as the number of minutes(if enableSeconds then number of seconds) from midnight
            */
           rawValue: {
             type: Number,
@@ -248,6 +268,15 @@ If you include this element as part of `paper-dialog`, use the class
             type: Number,
             notify: true,
             observer: '_minuteChanged',
+            value: 0
+          },
+          /**
+           * The current second (0-59)
+           */
+           second: {
+            type: Number,
+            notify: true,
+            observer: '_secondChanged',
             value: 0
           },
           /**
@@ -300,6 +329,10 @@ If you include this element as part of `paper-dialog`, use the class
             value: false,
             reflectToAttribute: true
           },
+          enableSeconds: {
+            type: Boolean,
+            value: false
+          },
           _queryMatches: {
             type: Boolean,
             value: false,
@@ -310,7 +343,7 @@ If you include this element as part of `paper-dialog`, use the class
           Polymer.IronResizableBehavior
         ],
         observers: [
-          '_updateTime(hour, minute)'
+          '_updateTime(hour, minute, second)'
         ],
         listeners: {
           'iron-resize': '_resizeHandler',
@@ -327,24 +360,36 @@ If you include this element as part of `paper-dialog`, use the class
           }
 
           var parsed = this.parseTime(time);
-          var cleanedTime = this.formatTime(parsed.hour, parsed.minute);
+          var cleanedTime = this.formatTime(parsed.hour, parsed.minute, parsed.second);
           if (cleanedTime !== time) {
             this.time = cleanedTime;
             return;
           }
-          this.rawValue = (parsed.hour * 60) + parsed.minute;
+          var rawValue = (parsed.hour * 60) + parsed.minute;
+          if (this.enableSeconds) {
+            rawValue = (rawValue * 60) + parsed.second;
+          }
+          this.rawValue = rawValue;
         },
-        _updateTime: function(hour, minute) {
-          this.rawValue = (hour * 60) + minute;
+        _updateTime: function(hour, minute, second) {
+          var rawValue = (hour * 60) + minute;
+          if (this.enableSeconds) {
+            rawValue = (rawValue * 60) + second;
+          }
+          this.rawValue = rawValue;
         },
-        formatTime: function(hour, minute) {
+        formatTime: function(hour, minute, second) {
           var period = (hour % 24) < 12 ? 'AM' : 'PM';
           hour = hour % 12 || 12;
           minute = ('0' + minute).substr(-2);
+          second = ('0' + second).substr(-2);
+          if (this.enableSeconds) {
+            minute += ':' + second;
+          }
           return hour + ':' + minute + ' ' + period;
         },
         parseTime: function(timeString) {
-          var pattern = /^\s*(\d{1,2}):?(\d{2})(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/;
+          var pattern = /^\s*(\d{1,2}):?(\d{2})(:?(\d{2}))?(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/;
           var match = timeString.match(pattern);
           if (!match) {
             warn('Invalid time:', timeString);
@@ -352,13 +397,14 @@ If you include this element as part of `paper-dialog`, use the class
           }
           var hour = parseInt(match[1]);
           var minute = parseInt(match[2]);
-          var period = match[4] ? (match[4][0].toUpperCase() + 'M') : 'AM';
+          var second = match[4] ? parseInt(match[4]) : 0;
+          var period = match[6] ? (match[6][0].toUpperCase() + 'M') : 'AM';
           if (period === 'PM' && hour < 12) {
             hour = (hour + 12) % 24;
           } else if (period === 'AM' && hour === 12) {
             hour = 0;
           }
-          return {hour: hour, minute: minute};
+          return {hour: hour, minute: minute, second: second};
         },
         togglePeriod: function() {
           this.period = (this.period === 'AM') ? 'PM' : 'AM';
@@ -368,9 +414,16 @@ If you include this element as part of `paper-dialog`, use the class
             this.rawValue = oldValue;
             return;
           }
-          this.hour = Math.floor(value / 60);
-          this.minute = value % 60;
-          this.time = this.formatTime(this.hour, this.minute);
+          if (this.enableSeconds) {
+            this.hour = Math.floor(value / 3600);
+            this.minute = Math.floor(value / 60) % 60;
+            this.second = value % 60;
+          } else {
+            this.hour = Math.floor(value / 60);
+            this.minute = value % 60;
+            this.second = 0;
+          }
+          this.time = this.formatTime(this.hour, this.minute, this.second);
         },
         _hour12Changed: function(hour12) {
           var add = (this.period === 'PM' ? 12 : 0);
@@ -394,6 +447,10 @@ If you include this element as part of `paper-dialog`, use the class
         _minuteChanged: function(minute) {
           minute = parseFloat(minute) % 60;
           this.minute = minute;
+        },
+        _secondChanged: function(second) {
+          second = parseFloat(second) % 60;
+          this.second = second;
         },
         _periodChanged: function(period) {
           if (isNaN(parseInt(this.hour)) || isNaN(parseInt(this.minute))) {
@@ -432,7 +489,7 @@ If you include this element as part of `paper-dialog`, use the class
             return;
           }
 
-          var clocks = {'hours': this.$.hourClock, 'minutes': this.$.minuteClock};
+          var clocks = {'hours': this.$.hourClock, 'minutes': this.$.minuteClock, 'seconds': this.$.secondClock};
           var from = clocks[fromView];
           var to = clocks[toView];
           var fromAngle = (360 / from.count) * from.selected;
@@ -473,6 +530,29 @@ If you include this element as part of `paper-dialog`, use the class
             } else {
               // show minutes if same hour is selected
               showMinutes();
+            }
+          } else if (this.view === 'minutes' && this.enableSeconds) {
+
+            var showSeconds = function() {
+              this.async(function() {
+                this._selecting = true;
+                this.view = 'seconds';
+                this._selecting = false;
+              }.bind(this), 100);
+              this.$.minuteClock.removeEventListener('paper-clock-transition-end', showSeconds);
+            }.bind(this);
+
+            if (event.detail.animated) {
+              this.$.minuteClock.addEventListener('paper-clock-transition-end', showSeconds);
+            } else {
+              showSeconds();
+            }
+
+            if (this.minute !== event.detail.value) {
+              this.minute = event.detail.value;
+            } else {
+              // show seconds if same minute is selected
+              showSeconds();
             }
           }
         },
