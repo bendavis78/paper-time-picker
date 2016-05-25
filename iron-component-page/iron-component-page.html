@@ -38,6 +38,10 @@ documentation page including demos (if available).
         background: var(--paper-grey-50);
       }
 
+      [hidden] {
+        display: none !important;
+      }
+
       p {
         max-width: 20em;
       }
@@ -551,6 +555,7 @@ documentation page including demos (if available).
 
           this._iframe = document.createElement('iframe');
           this._iframe.src = demoSrc;
+          this._iframe.allowFullscreen = true;
           Polymer.dom(this.$.demo).appendChild(this._iframe);
         },
 
