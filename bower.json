@@ -27,7 +27,8 @@
     "iron-resizable": "PolymerElements/iron-resizable-behavior#^1.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
     "paper-styles": "PolymerElements/paper-styles#^1.0.0",
-    "iron-pages": "PolymerElements/iron-pages#^1.0.0"
+    "iron-pages": "PolymerElements/iron-pages#^1.0.0",
+    "classList.js": "https://github.com/eligrey/classList.js.git#~1.1.20150312"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
