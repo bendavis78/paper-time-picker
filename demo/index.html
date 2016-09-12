@@ -40,6 +40,8 @@
       scope.dismissDialog = function(event) {
         if (event.detail.confirmed) {
           scope.time = scope.$.picker.time;
+          // reset the picker to hours
+          this.$.picker.view = 'hours';
         }
       };
       scope.showDialog = function() {
