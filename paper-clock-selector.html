@@ -340,9 +340,7 @@
         },
         _updateSize: function() {
           var radius = Math.min(this.offsetWidth, this.offsetHeight) / 2;
-          if (!radius || this._resizedCache === radius) {
-            return;
-          }
+
           this._radius = radius;
           this._selectorSize = 20;
           this._selectorDotSize = 3;
