@@ -79,10 +79,6 @@
         cursor: pointer;
         fill-opacity: 0;
       }
-      #clock.animating #clockHand, 
-      #clock.animating #clipCircle {
-        transition: transform 150ms ease-in;
-      }
     </style>
     <svg version="1.1" id="clock">
       <defs>
@@ -105,6 +101,10 @@
   <script>
     (function(){
       var SVG_NS = 'http://www.w3.org/2000/svg';
+
+      var ANIMATION_TRANSITION_TIME = 150; // in milliseconds
+
+      var ANIMATION_FRAME_DATA_ATTRIBUTE = "paperClockAnimationFrame";
 
       // radius values as a percentage of the clock-face radius
       var MAX_VISIBLE = 12;
@@ -158,7 +158,7 @@
             type: Boolean,
             value: false
           },
-          _rotationAngle : {
+          _currentAngle : {
             type : Number,
             value : 0
           },
@@ -191,41 +191,78 @@
           animate = typeof(animate) === 'undefined' ? this.animated : animate;
           animate = this._radius ? animate : false;
 
-          this.$.clock.classList.remove('animating');
-
-          var current, transform = this._rotationAngle;
+          var current = this._currentAngle;
           var rotate = getShortestAngle(current, deg);
           if (normalizeAngle(rotate) === current) {
             return this._setHandRotation(current);
           }
 
           if (!animate) {
-            return this._setHandRotation(rotate);
+            return this._setHandRotation(rotate); 
           }
 
           this._once(this._transitionEvent, function() {
             if (callback) {
               callback();
             }
-            this.$.clock.classList.remove('animating');
             this.fire('paper-clock-transition-end');
           }.bind(this), this.$.clockHand);
 
-          this.$.clock.classList.add('animating');
           this.async(function() {
             this._setHandRotation(rotate);
           });
 
         },
-        _updateRotationTransform : function(el) {
-           el.setAttribute("transform", "rotate(" + this._rotationAngle + " " + this._rotationOriginX + " " + this._rotationOriginY + ")");
+
+        _setTransform : function(el, angle) {
+          // If the angle is in transition from a previous animation, cancel it
+          var animationFrame = el.getAttribute(ANIMATION_FRAME_DATA_ATTRIBUTE);
+          if (animationFrame) {
+            window.cancelAnimationFrame(animationFrame);
+          }
+
+          // If the element is animated, create an animation loop to transition between the current angle
+          // and the new value.
+          if (this.animated) {
+            var previousAngle = this._currentAngle;
+            var angleDifference = angle - previousAngle;
+          
+            var animationStart = null;
+            var incrementAngle = function(timestamp) {
+              if (!animationStart) {
+                animationStart = timestamp;
+              }
+
+              // Calculate the angle of rotation for this frame and apply it to the element
+              var elapsedTime = timestamp - animationStart;
+              var animationProgress = Math.min(elapsedTime / ANIMATION_TRANSITION_TIME, 1);
+              this._currentAngle = previousAngle + (this._applyAnimationEasing(animationProgress) * angleDifference);
+              el.setAttribute("transform", "rotate(" + this._currentAngle + " " + this._rotationOriginX + " " + this._rotationOriginY + ")");
+
+              // If the animation hasn't completed, request animation of the next frame
+              if (animationProgress < 1) {
+                el.setAttribute(ANIMATION_FRAME_DATA_ATTRIBUTE, window.requestAnimationFrame(incrementAngle));
+              }
+            }.bind(this);
+
+            // Begin the animation loop by requesting the first frame
+            el.setAttribute(ANIMATION_FRAME_DATA_ATTRIBUTE, window.requestAnimationFrame(incrementAngle));
+          }
+          else {
+            // If the element is not animated, set the transform immediately
+            el.setAttribute("transform", "rotate(" + angle + " " + this._rotationOriginX + " " + this._rotationOriginY + ")");
+          }
         },
+
+        _applyAnimationEasing : function(progress) {
+          return Math.pow(progress, 2);
+        },
+
         _setHandRotation: function(deg) {
           var hasLabel = ((deg / 360) * this.count) % this.step === 0 ;
           this.$.clockHand.classList[['remove', 'add'][+hasLabel]]('no-dot');
-          this._rotationAngle = deg;
-          this._updateRotationTransform(this.$.clockHand);
-          this._updateRotationTransform(this.$.clipCircle);
+          this._setTransform(this.$.clockHand, deg);
+          this._setTransform(this.$.clipCircle, deg);
         },
         _selectedChanged: function(selected) {
           if (!this.count || isNaN(selected)) {
@@ -353,8 +390,8 @@
           this.$.clock.style.width = (radius * 2) + 'px';
           this.$.clock.style.height = (radius * 2) + 'px';
           this._rotationOriginX = this._rotationOriginY = radius;
-          this._updateRotationTransform(this.$.clockHand);
-          this._updateRotationTransform(this.$.clipCircle);
+          this._setTransform(this.$.clockHand, this._currentAngle);
+          this._setTransform(this.$.clipCircle, this._currentAngle);
 
           this.async(function() {
             // FIXME: this is hacky, but for some reason we need to wait a bit
