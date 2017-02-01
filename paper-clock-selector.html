@@ -434,7 +434,7 @@
           }
 
           /* don't animate while tracking */
-          var animated = this.animated && event.type !== 'track';
+          this.animated = event.type !== 'track';
 
           // use coords to find angle from 12 o'clock position
           var theta = Math.atan(y / x);
@@ -447,7 +447,7 @@
 
           /* only fire selected when we've tapped or stopped tracking */
           if (event.type === 'tap' || event.detail.state === 'end') {
-            this.fire('paper-clock-selected', {value: this.selected, animated: animated});
+            this.fire('paper-clock-selected', {value: this.selected, animated: this.animated});
           }
         },
         _formatNumber: function(value) {
