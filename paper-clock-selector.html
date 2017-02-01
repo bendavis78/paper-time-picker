@@ -101,9 +101,9 @@
     (function(){
       var SVG_NS = 'http://www.w3.org/2000/svg';
 
-      var ANIMATION_TRANSITION_TIME = 150; // in milliseconds
+      var RADIANS_PER_DEGREE = Math.PI / 180;
 
-      var ANIMATION_FRAME_DATA_ATTRIBUTE = "paperClockAnimationFrame";
+      var ANIMATION_DURATION = 150; // in milliseconds
 
       // radius values as a percentage of the clock-face radius
       var MAX_VISIBLE = 12;
@@ -158,23 +158,7 @@
           animated: {
             type: Boolean,
             value: false
-          },
-          _currentAngle : {
-            type : Number,
-            value : 0
-          },
-          _rotationOriginX : {
-            type : Number,
-            value : 0
-          },
-          _rotationOriginY : {
-            type : Number,
-            value : 0
-          },
-          _instanceId : Number
-
-          // store absolute positions in _handX and _handY
-          // remove all uses of CSS transforms for rotation, replace with _handX and _handY calcs
+          }
         },
         listeners: {
           'iron-resize': '_updateSize'
@@ -187,6 +171,7 @@
           Polymer.IronResizableBehavior
         ],
         ready: function() {
+          this._currentAngle = 0;
           this._populate();
           this._selectedChanged(this.selected);
           this._instanceId = instanceCount++;
@@ -200,35 +185,30 @@
           var current = this._currentAngle;
           var rotate = getShortestAngle(current, deg);
           if (normalizeAngle(rotate) === current) {
-            return this._setHandRotation(current);
+            return this._setHandRotation(current, animate);
           }
 
-          if (!animate) {
-            return this._setHandRotation(rotate); 
+          if (animate) {
+            this._once('paper-clock-transition-end', function() {
+              if (callback) {
+                callback();
+              }
+            }.bind(this));
           }
-
-          this._once('paper-clock-transition-end', function() {
-            if (callback) {
-              callback();
-            }
-          }.bind(this), this.$.clockHand);
 
           this.async(function() {
-            this._setHandRotation(rotate);
+            this._setHandRotation(rotate, animate);
           });
-
         },
-
-        _performRotation : function(el, angle) {
+        _performRotation : function(angle, animate) {
           // If the angle is in transition from a previous animation, cancel it
-          var animationFrame = el.getAttribute(ANIMATION_FRAME_DATA_ATTRIBUTE);
-          if (animationFrame) {
-            window.cancelAnimationFrame(animationFrame);
+          if (this._animationFrame) {
+            window.cancelAnimationFrame(this._animationFrame);
           }
 
-          // If the element is animated, create an animation loop to transition between the current angle
-          // and the new value.
-          if (this.animated) {
+          // If the transition is animated, create an animation loop that will 
+          // gradually increment towards the new angle while refreshing the hand positions
+          if (animate) {
             var previousAngle = this._currentAngle;
             var angleDifference = angle - previousAngle;
           
@@ -240,39 +220,34 @@
 
               // Calculate the angle of rotation for this frame and apply it to the element
               var elapsedTime = timestamp - animationStart;
-              var animationProgress = Math.min(elapsedTime / ANIMATION_TRANSITION_TIME, 1);
+              var animationProgress = Math.min(elapsedTime / ANIMATION_DURATION, 1);
               this._currentAngle = previousAngle + (this._applyAnimationEasing(animationProgress) * angleDifference);
               this._updateHandPositions();
 
               // If the animation hasn't completed, request animation of the next frame
-              if (animationProgress < 1) {
-                el.setAttribute(ANIMATION_FRAME_DATA_ATTRIBUTE, window.requestAnimationFrame(incrementAngle));
-              }
-              else {
-                el.removeAttribute(ANIMATION_FRAME_DATA_ATTRIBUTE);
+              if (animationProgress === 1) {
+                this._animationFrame = null;
                 this.fire('paper-clock-transition-end');
+              } else {
+                  this._animationFrame = window.requestAnimationFrame(incrementAngle);
               }
             }.bind(this);
 
             // Begin the animation loop by requesting the first frame
-            el.setAttribute(ANIMATION_FRAME_DATA_ATTRIBUTE, window.requestAnimationFrame(incrementAngle));
-          }
-          else {
-            // If the element is not animated, set the transform immediately
+            this._animationFrame = window.requestAnimationFrame(incrementAngle);
+          } else {
+            // If the transition is not animated, set the end angle immediately
             this._currentAngle = angle;
             this._updateHandPositions();
           }
         },
-
         _applyAnimationEasing : function(progress) {
           return Math.pow(progress, 2);
         },
-
-        _setHandRotation: function(deg) {
+        _setHandRotation: function(deg, animate) {
           var hasLabel = ((deg / 360) * this.count) % this.step === 0 ;
           this.$.clockHand.classList[['remove', 'add'][+hasLabel]]('no-dot');
-          this._performRotation(this.$.clockHand, deg);
-          this._performRotation(this.$.clipCircle, deg);
+          this._performRotation(deg, animate);
         },
         _selectedChanged: function(selected) {
           if (!this.count || isNaN(selected)) {
@@ -401,7 +376,6 @@
           this._resizedCache = this._radius;
           this.$.clock.style.width = (radius * 2) + 'px';
           this.$.clock.style.height = (radius * 2) + 'px';
-          this._rotationOriginX = this._rotationOriginY = radius;
           this._updateHandPositions();
 
           this.async(function() {
@@ -417,17 +391,17 @@
 
           this._selectorOuter = this._radius - this._padding * 2;
           this._selectorInner = this._selectorOuter - this._selectorSize * 2;
-          var selectorCenter = this._selectorOuter - this._selectorSize;
+          this._selectorCenter = this._selectorOuter - this._selectorSize;
 
           var numbers = this._numbers;
-          var angle = (360 / this.count) * (Math.PI / 180);
+          var angle = (360 / this.count) * RADIANS_PER_DEGREE;
 
           var a, number;
           for (var i=0; i<this.count; i++) {
             a = angle * i;
             number = numbers[i];
-            number.x = this._radius + (Math.sin(a) * selectorCenter);
-            number.y = this._radius - (Math.cos(a) * selectorCenter);
+            number.x = this._radius + (Math.sin(a) * this._selectorCenter);
+            number.y = this._radius - (Math.cos(a) * this._selectorCenter);
             this._updateNumber(number);
           }
         },
@@ -460,19 +434,20 @@
           }
 
           /* don't animate while tracking */
-          this.animated = event.type !== 'track';
+          var animated = this.animated && event.type !== 'track';
 
           // use coords to find angle from 12 o'clock position
           var theta = Math.atan(y / x);
           theta = (Math.PI / 2) + (x < 0 ? theta + Math.PI : theta);
-          var intervalRad = (360 / this.count) * (Math.PI / 180);
+          var intervalRad = (360 / this.count) * RADIANS_PER_DEGREE;
+
 
           // determine the selected number
           this.selected = Math.round(theta / intervalRad);
 
           /* only fire selected when we've tapped or stopped tracking */
           if (event.type === 'tap' || event.detail.state === 'end') {
-            this.fire('paper-clock-selected', {value: this.selected, animated: this.animated});
+            this.fire('paper-clock-selected', {value: this.selected, animated: animated});
           }
         },
         _formatNumber: function(value) {
@@ -510,13 +485,13 @@
         },
 
         _updateHandPositions : function() {
-          var radiansFrom12 = (this._currentAngle * Math.PI / 180) - (Math.PI / 2);
-          var originX = this._rotationOriginX;
-          var originY = this._rotationOriginY;
-          var handLength = originY - this._numbers[0].y; // distance between the middle of the clock and the 12th hour
+          if (!this._radius) {
+            return;
+          }
 
-          this._handX = originX + (handLength * Math.cos(radiansFrom12));
-          this._handY = originY + (handLength * Math.sin(radiansFrom12));
+          var radians = this._currentAngle * RADIANS_PER_DEGREE;
+          this._handX = this._radius + (Math.sin(radians) * this._selectorCenter);
+          this._handY = this._radius - (Math.cos(radians) * this._selectorCenter);
         },
 
       });
