@@ -73,7 +73,6 @@
       .number text.clipped {
         z-index: 4;
         fill: var(--text-primary-color);
-        clip-path: url('#handClip');
       }
       .select-area {
         cursor: pointer;
@@ -82,7 +81,7 @@
     </style>
     <svg version="1.1" id="clock">
       <defs>
-        <clipPath id="handClip">
+        <clipPath id="handClip[[_instanceId]]">
           <circle id="clipCircle" r$="{{_selectorSize}}" cx$="{{_handX}}" cy$="{{_handY}}"></circle>
         </clipPath>
       </defs>
@@ -109,11 +108,14 @@
       // radius values as a percentage of the clock-face radius
       var MAX_VISIBLE = 12;
 
+      var instanceCount = 0;
+      
       var normalizeAngle = function(a) {
         // convert angle to a positive value between 0 and 360
         a = a ? a % 360 : 0;
         return a < 0 ? a + 360 : a;
       };
+      
       function getShortestAngle(from, to) {
         var angle, offset = 0;
         from = from || 0;
@@ -151,8 +153,7 @@
           },
           zeroPad: {
             type: Boolean,
-            value: false,
-            observer: '_zeroPadChanged'
+            value: false
           },
           animated: {
             type: Boolean,
@@ -169,21 +170,26 @@
           _rotationOriginY : {
             type : Number,
             value : 0
-          }
+          },
+          _instanceId : Number
+
+          // store absolute positions in _handX and _handY
+          // remove all uses of CSS transforms for rotation, replace with _handX and _handY calcs
         },
         listeners: {
           'iron-resize': '_updateSize'
         },
         observers: [
-          '_populate(count, step, useZero)'
+          '_populate(count, step, useZero, _instanceId)',
+          '_zeroPadChanged(zeroPad, _numbers)'
         ],
         behaviors: [
           Polymer.IronResizableBehavior
         ],
         ready: function() {
-          this._transitionEvent = this.style.WebkitTransition ? 'transitionEnd' : 'webkitTransitionEnd';
           this._populate();
           this._selectedChanged(this.selected);
+          this._instanceId = instanceCount++;
         },
         setClockHand: function(deg, animate, callback) {
           deg = normalizeAngle(deg);
@@ -201,11 +207,10 @@
             return this._setHandRotation(rotate); 
           }
 
-          this._once(this._transitionEvent, function() {
+          this._once('paper-clock-transition-end', function() {
             if (callback) {
               callback();
             }
-            this.fire('paper-clock-transition-end');
           }.bind(this), this.$.clockHand);
 
           this.async(function() {
@@ -214,7 +219,7 @@
 
         },
 
-        _setTransform : function(el, angle) {
+        _performRotation : function(el, angle) {
           // If the angle is in transition from a previous animation, cancel it
           var animationFrame = el.getAttribute(ANIMATION_FRAME_DATA_ATTRIBUTE);
           if (animationFrame) {
@@ -237,11 +242,15 @@
               var elapsedTime = timestamp - animationStart;
               var animationProgress = Math.min(elapsedTime / ANIMATION_TRANSITION_TIME, 1);
               this._currentAngle = previousAngle + (this._applyAnimationEasing(animationProgress) * angleDifference);
-              el.setAttribute("transform", "rotate(" + this._currentAngle + " " + this._rotationOriginX + " " + this._rotationOriginY + ")");
+              this._updateHandPositions();
 
               // If the animation hasn't completed, request animation of the next frame
               if (animationProgress < 1) {
                 el.setAttribute(ANIMATION_FRAME_DATA_ATTRIBUTE, window.requestAnimationFrame(incrementAngle));
+              }
+              else {
+                el.removeAttribute(ANIMATION_FRAME_DATA_ATTRIBUTE);
+                this.fire('paper-clock-transition-end');
               }
             }.bind(this);
 
@@ -250,7 +259,8 @@
           }
           else {
             // If the element is not animated, set the transform immediately
-            el.setAttribute("transform", "rotate(" + angle + " " + this._rotationOriginX + " " + this._rotationOriginY + ")");
+            this._currentAngle = angle;
+            this._updateHandPositions();
           }
         },
 
@@ -261,8 +271,8 @@
         _setHandRotation: function(deg) {
           var hasLabel = ((deg / 360) * this.count) % this.step === 0 ;
           this.$.clockHand.classList[['remove', 'add'][+hasLabel]]('no-dot');
-          this._setTransform(this.$.clockHand, deg);
-          this._setTransform(this.$.clipCircle, deg);
+          this._performRotation(this.$.clockHand, deg);
+          this._performRotation(this.$.clipCircle, deg);
         },
         _selectedChanged: function(selected) {
           if (!this.count || isNaN(selected)) {
@@ -329,6 +339,7 @@
           }
           this.set('_numbers', numbers);
           this._positionClockPoints();
+          this._updateHandPositions();
         },
         _updateNumber: function(number) {
           var dom = number.dom;
@@ -370,6 +381,7 @@
             g.appendChild(text);
             textClipped = create('text', ['clipped']);
             textClipped.textContent = number.label;
+            textClipped.setAttribute("clip-path", "url(#handClip" + this._instanceId + ")");
             g.appendChild(textClipped);
           }
 
@@ -390,8 +402,7 @@
           this.$.clock.style.width = (radius * 2) + 'px';
           this.$.clock.style.height = (radius * 2) + 'px';
           this._rotationOriginX = this._rotationOriginY = radius;
-          this._setTransform(this.$.clockHand, this._currentAngle);
-          this._setTransform(this.$.clipCircle, this._currentAngle);
+          this._updateHandPositions();
 
           this.async(function() {
             // FIXME: this is hacky, but for some reason we need to wait a bit
@@ -419,8 +430,6 @@
             number.y = this._radius - (Math.cos(a) * selectorCenter);
             this._updateNumber(number);
           }
-          this._handX = this._numbers[0].x;
-          this._handY = this._numbers[0].y;
         },
         _notifyNumberChanged: function(path) {
           var propPath, props = ['x', 'y'];
@@ -498,7 +507,18 @@
             callback.apply(null, arguments);
           }
           node.addEventListener(eventName, onceCallback);
-        }
+        },
+
+        _updateHandPositions : function() {
+          var radiansFrom12 = (this._currentAngle * Math.PI / 180) - (Math.PI / 2);
+          var originX = this._rotationOriginX;
+          var originY = this._rotationOriginY;
+          var handLength = originY - this._numbers[0].y; // distance between the middle of the clock and the 12th hour
+
+          this._handX = originX + (handLength * Math.cos(radiansFrom12));
+          this._handY = originY + (handLength * Math.sin(radiansFrom12));
+        },
+
       });
     })();
   </script>
