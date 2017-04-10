@@ -200,7 +200,7 @@ If you include this element as part of `paper-dialog`, use the class
         <div id="timePicker">
             <div id="heading">
                 <iron-selector class="time" selectable="[name]" attr-for-selected="name" selected="{{view}}">
-                    <div name="hours" class="hour">{{hour12}}</div>
+                    <div name="hours" class="hour">{{hour}}</div>
                     <div class="sep">:</div>
                     <div name="minutes" class="minute">{{_zeroPad(minute, 2)}}</div>
                     <template is="dom-if" if="[[ enableSeconds ]]">
@@ -208,9 +208,12 @@ If you include this element as part of `paper-dialog`, use the class
                         <div name="seconds" class="second">{{_zeroPad(second, 2)}}</div>
                     </template>
                 </iron-selector>
+
                 <iron-selector class="period" attr-for-selected="name" selected="{{period}}">
-                    <div name="AM">AM</div>
-                    <div name="PM">PM</div>
+                    <template is="dom-if" if="{{!isTwentyFourHours}}">
+                        <div name="AM">AM</div>
+                        <div name="PM">PM</div>
+                    </template>
                 </iron-selector>
             </div>
             <div id="clockArea">
@@ -219,8 +222,8 @@ If you include this element as part of `paper-dialog`, use the class
                                          selected="{{view}}"
                                          entry-animation="fade-in-animation" exit-animation="fade-out-animation">
                         <neon-animatable class="clock-animatable" name="hours">
-                            <paper-clock-selector class="clock" id="hourClock" count="12" step="1" twenty-four-hours
-                                                  animated="[[animated]]" selected="{{hour12}}"></paper-clock-selector>
+                            <paper-clock-selector class="clock" id="hourClock" count="12" step="1" twenty-four-hours="{{isTwentyFourHours}}"
+                                                  animated="[[animated]]" selected="{{hour}}"></paper-clock-selector>
                         </neon-animatable>
                         <neon-animatable class="clock-animatable" name="minutes">
                             <paper-clock-selector class="clock" id="minuteClock" count="60" step="5"
@@ -250,6 +253,11 @@ If you include this element as part of `paper-dialog`, use the class
             Polymer({
                 is: 'paper-time-picker',
                 properties: {
+                    isTwentyFourHours: {
+                        type: Boolean,
+                        value: false,
+                        notify: true
+                    },
                     /**
                      * The selected time
                      */
@@ -268,6 +276,7 @@ If you include this element as part of `paper-dialog`, use the class
                         notify: true,
                         observer: '_rawValueChanged'
                     },
+
                     /**
                      * The current 24-hour value (0-24)
                      */
@@ -367,7 +376,7 @@ If you include this element as part of `paper-dialog`, use the class
                     Polymer.IronResizableBehavior
                 ],
                 observers: [
-                    '_updateTime(hour, minute, second)'
+                   '_updateTime(hour, minute, second)'
                 ],
                 listeners: {
                     'iron-resize': '_resizeHandler',
@@ -403,14 +412,22 @@ If you include this element as part of `paper-dialog`, use the class
                     this.rawValue = rawValue;
                 },
                 formatTime: function (hour, minute, second) {
-                    var period = (hour % 24) < 12 ? 'AM' : 'PM';
-                    hour = hour % 12 || 12;
+                    var period = "";
+
+                        period = (hour % 24) < 12 ? 'AM' : 'PM';
+                    if(!this.isTwentyFourHours){
+                        hour = hour % 12 || 12;
+                    }
                     minute = ('0' + minute).substr(-2);
                     second = ('0' + second).substr(-2);
                     if (this.enableSeconds) {
                         minute += ':' + second;
                     }
-                    return hour + ':' + minute + ' ' + period;
+                    if(this.isTwentyFourHours){
+                        return hour+':'+minute;
+                    }else{
+                         return hour + ':' + minute + ' ' + period;
+                    }
                 },
                 parseTime: function (timeString) {
                     var pattern = /^\s*(\d{1,2}):?(\d{2})(:?(\d{2}))?(\s*([AaPp])\.?[Mm]\.?|[A-Z])?\s*$/;
@@ -463,9 +480,10 @@ If you include this element as part of `paper-dialog`, use the class
                         this.hour = oldValue;
                         return;
                     }
-                    hour = parseFloat(hour) % 24;
-                    this.hour = hour;
+
                     this.hour12 = this._twelveHour(hour);
+
+                    this.hour = hour;
                     this.period = ['PM', 'AM'][+(hour < 12)];
                 },
                 _minuteChanged: function (minute) {
