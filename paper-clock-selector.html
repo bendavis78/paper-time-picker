@@ -213,6 +213,7 @@
                   this._populate();
                   this._selectedChanged(this.selected);
               },
+
               setClockHand: function (deg, animate, callback) {
                   deg = normalizeAngle(deg);
 
@@ -251,15 +252,19 @@
                   });
 
               },
+
               _getTransform: function (el) {
                   return el.style.transform | el.style.webkitTransform | el.style.msTransform;
               },
+
               _setTransform: function (el, value) {
                   el.style.msTransform = el.style.webkitTransform = el.style.transform = value;
               },
+
               _setTransformOrigin: function (el, value) {
                   el.style.msTransformOrigin = el.style.webkitTransformOrigin = el.style.transformOrigin = value;
               },
+
               _setHandRotation: function (deg) {
                   var hasLabel = ((deg / 360) * this.count) % this.step === 0;
                   var transform = 'rotate(' + deg + 'deg)';
@@ -267,6 +272,7 @@
                   this._setTransform(this.$.clockHand, transform);
                   this._setTransform(this.$.clipCircle, transform);
               },
+
               _selectedChanged: function (selected) {
                   if (!this.count || isNaN(selected)) {
                       return;
@@ -282,16 +288,17 @@
                       value = this.count;
                   }
                   if (value !== this.selected && value !== 0) {
-                      this.selected = value;
+                      this.set('selected', value);
                       return;
                   }
                   if (value === 0 && this.twentyFourHours) {
-                      this.selected = 0;
+                      this.set('selected', 0);
                       return;
                   }
                   this._vibrate();
                   this.setClockHand((360 / this.count) * this.selected);
               },
+
               _stepChanged: function (value, oldValue) {
                   this._step = oldValue;
                   if (!this.count || isNaN(value)) {
@@ -303,6 +310,7 @@
                   }
                   this._step = value;
               },
+
               _populate: function () {
                   delete this._resizedCache;
                   var display, value, number;
@@ -350,7 +358,7 @@
                       if (this.count === 12 && this.twentyFourHours) {
                           number24 = {
                               index: i,
-                              value: value + 12,
+                              value: value+12,
                               display: value % this._step === 0,
                               x: 0,
                               y: 0,
@@ -366,6 +374,7 @@
                   this.set('_numbers24', numbers24);
                   this._positionClockPoints();
               },
+
               _updateNumber: function (number) {
                   var dom = number.dom;
                   if (!dom) {
@@ -380,6 +389,7 @@
                       dom.textClipped.textContent = this._formatNumber(number.value);
                   }
               },
+
               _createNumberElement: function (number) {
                   // We can't use templates inside SVG elements, so we have to create
                   // the numbers in dom and set up attribute bindings manually
@@ -419,6 +429,7 @@
 
                   return {g: g, text: text, textClipped: textClipped};
               },
+
               _updateSize: function () {
                   var radius = Math.min(this.offsetWidth, this.offsetHeight) / 2;
                   if (!radius || this._resizedCache === radius) {
@@ -443,6 +454,7 @@
                       this._bounds = this.$.face.getBoundingClientRect();
                   }.bind(this), 150);
               },
+
               _positionClockPoints: function () {
                   if (!this._radius) {
                       return;
@@ -466,8 +478,7 @@
                       number.y = this._radius - (Math.cos(a) * selectorCenter);
                       this._updateNumber(number);
                   }
-                  this._handX = this._numbers[0].x;
-                  this._handY = this._numbers[0].y;
+
 
                   if (this.twentyFourHours) {
                       //gestion des 24 heures;
@@ -476,13 +487,22 @@
                       for (var i = 0; i < this.count; i++) {
                           a = angle * i;
                           number = numbers24[i];
-                          number.x = this._radius + (Math.sin(a) * 68);
-                          number.y = this._radius - (Math.cos(a) * 68);
+                          number.x = this._radius + (Math.sin(a) * (selectorCenter - 40));
+                          number.y = this._radius - (Math.cos(a) * (selectorCenter - 40));
                           this._updateNumber(number);
                       }
                   }
 
+                  if(this.twentyFourHours && this.selected > 12){
+                      this._handX = this._numbers24[0].x;
+                      this._handY = this._numbers24[0].y;
+                  }else{
+                      this._handX = this._numbers[0].x;
+                      this._handY = this._numbers[0].y;
+                  }
+
               },
+
               _notifyNumberChanged: function (path) {
                   var propPath, props = ['x', 'y'];
                   for (var i = 0; i < props.length; i++) {
@@ -492,6 +512,7 @@
                       }
                   }
               },
+
               _getSelectArea: function (radius, outer, inner) {
                   return '\n' +
                       'M ' + (radius - outer) + ' ' + radius + '\n' +
@@ -501,6 +522,7 @@
                       'A ' + inner + ' ' + inner + ' 0 0 1 ' + (radius + inner) + ' ' + radius + '\n' +
                       'A ' + inner + ' ' + inner + ' 0 0 1 ' + (radius - inner) + ' ' + radius;
               },
+
               _onTouch: function (event) {
                   var x = event.detail.x - this._bounds.left - this._radius;
                   var y = event.detail.y - this._bounds.top - this._radius;
@@ -523,21 +545,27 @@
                   theta = (Math.PI / 2) + (x < 0 ? theta + Math.PI : theta);
                   var intervalRad = (360 / this.count) * (Math.PI / 180);
 
-                  // determine the selected number
-                  this.selected = Math.round(theta / intervalRad);
-                  this._handX = this._numbers[0].x;
-                  this._handY = this._numbers[0].y;
+                  var selected = Math.round(theta / intervalRad) ;
 
+                  // determine the selected number
                   if (distance < 88) {
-                      this.selected = this.selected === 0 ? this.selected : this.selected + 12;
+                      selected =  selected === 0 ? 24 : Math.round(theta / intervalRad) + 12;
                       this._handX = this._numbers24[0].x;
                       this._handY = this._numbers24[0].y;
+                  }else {
+                      selected = Math.round(theta / intervalRad);
+                      this._handX = this._numbers[0].x;
+                      this._handY = this._numbers[0].y;
                   }
+
+                  this.selected = selected;
+
                 /* only fire selected when we've tapped or stopped tracking */
                   if (event.type === 'tap' || event.detail.state === 'end') {
                       this.fire('paper-clock-selected', {value: this.selected, animated: this.animated});
                   }
               },
+
               _formatNumber: function (value) {
                   if (this.zeroPad) {
                       return ('0' + value).substr(-2);
@@ -547,6 +575,7 @@
                   }
                   return value.toString();
               },
+
               _getNumberClass: function (pfx, n, selected) {
                   var cssClass = pfx;
                   if (selected.value === n.value) {
@@ -554,6 +583,7 @@
                   }
                   return cssClass;
               },
+
               _vibrate: function () {
                   this.debounce('vibrate', function () {
                       if (navigator.vibrate) {
@@ -561,11 +591,13 @@
                       }
                   });
               },
+
               _zeroPadChanged: function () {
                   this._numbers.forEach(function (number) {
                       this._updateNumber(number);
                   }.bind(this));
               },
+
               _once: function (eventName, callback, node) {
                   node = node || this;
                   function onceCallback() {
@@ -575,6 +607,7 @@
 
                   node.addEventListener(eventName, onceCallback);
               }
+
           });
       })();
   </script>
