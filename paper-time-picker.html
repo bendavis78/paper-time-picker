@@ -200,7 +200,7 @@ If you include this element as part of `paper-dialog`, use the class
         <div id="timePicker">
             <div id="heading">
                 <iron-selector class="time" selectable="[name]" attr-for-selected="name" selected="{{view}}">
-                    <div name="hours" class="hour">{{hour}}</div>
+                    <div name="hours" class="hour">{{hour12}}</div>
                     <div class="sep">:</div>
                     <div name="minutes" class="minute">{{_zeroPad(minute, 2)}}</div>
                     <template is="dom-if" if="[[ enableSeconds ]]">
@@ -210,10 +210,9 @@ If you include this element as part of `paper-dialog`, use the class
                 </iron-selector>
 
                 <iron-selector class="period" attr-for-selected="name" selected="{{period}}">
-                    <template is="dom-if" if="{{!isTwentyFourHours}}">
-                        <div name="AM">AM</div>
+                    <div name="AM">AM</div>
                         <div name="PM">PM</div>
-                    </template>
+
                 </iron-selector>
             </div>
             <div id="clockArea">
@@ -222,8 +221,8 @@ If you include this element as part of `paper-dialog`, use the class
                                          selected="{{view}}"
                                          entry-animation="fade-in-animation" exit-animation="fade-out-animation">
                         <neon-animatable class="clock-animatable" name="hours">
-                            <paper-clock-selector class="clock" id="hourClock" count="12" step="1" twenty-four-hours="{{isTwentyFourHours}}"
-                                                  animated="[[animated]]" selected="{{hour}}"></paper-clock-selector>
+                            <paper-clock-selector class="clock" id="hourClock" count="12" step="1" twenty-four-hours
+                                                  animated="[[animated]]" selected="{{hour12}}"></paper-clock-selector>
                         </neon-animatable>
                         <neon-animatable class="clock-animatable" name="minutes">
                             <paper-clock-selector class="clock" id="minuteClock" count="60" step="5"
