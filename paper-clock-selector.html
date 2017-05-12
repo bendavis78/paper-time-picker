@@ -364,9 +364,7 @@
         },
         _updateSize: function() {
           var radius = Math.min(this.offsetWidth, this.offsetHeight) / 2;
-          if (!radius || this._resizedCache === radius) {
-            return;
-          }
+
           this._radius = radius;
           this._selectorSize = 20;
           this._selectorDotSize = 3;
@@ -382,6 +380,15 @@
             // FIXME: this is hacky, but for some reason we need to wait a bit
             // to get an accurate measurement
             this._bounds = this.$.face.getBoundingClientRect();
+
+            // account for page scrolling
+            this._bounds = {
+                top: this._bounds.top + window.pageYOffset,
+                right: this._bounds.right + window.pageXOffset,
+                bottom: this._bounds.bottom + window.pageYOffset,
+                left: this._bounds.left + window.pageXOffset,
+                width: this._bounds.width
+            }
           }.bind(this), 150);
         },
         _positionClockPoints: function() {
@@ -424,8 +431,8 @@
             'A ' + inner + ' ' + inner + ' 0 0 1 ' + (radius - inner) + ' ' + radius;
         },
         _onTouch: function(event) {
-          var x = event.detail.x - this._bounds.left - this._radius;
-          var y = event.detail.y - this._bounds.top - this._radius;
+          var x = event.detail.x + window.pageXOffset - this._bounds.left - this._radius;
+          var y = event.detail.y + window.pageYOffset - this._bounds.top - this._radius;
 
           /* only rotate while in the touch area */
           var distance = Math.abs(Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)));
