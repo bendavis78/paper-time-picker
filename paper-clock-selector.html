@@ -422,6 +422,10 @@
           }
         },
         _getSelectArea: function(radius, outer, inner) {
+          if (radius === undefined || outer === undefined || inner === undefined) {
+            return;
+          }
+
           return '\n' +
             'M ' + (radius - outer) + ' ' + radius + '\n' + 
             'A ' + outer + ' ' + outer + ' 0 0 0 ' + (radius + outer) + ' ' + radius + '\n' + 
