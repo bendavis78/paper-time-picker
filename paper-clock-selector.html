@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="classlist-shim.html">
 
@@ -10,13 +11,13 @@
 <dom-module id="paper-clock-selector">
   <template>
     <style>
-      :host * {
-        -webkit-tap-highlight-color: rgba(0,0,0,0);
+       :host * {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
       }
 
-      :host {
+       :host {
         display: block;
-        @apply(--paper-font-body1);
+        @apply --paper-font-body1;
         -webkit-touch-callout: none;
         -webkit-user-select: none;
         -khtml-user-select: none;
@@ -24,56 +25,69 @@
         -ms-user-select: none;
         user-select: none;
         pointer-events: none;
-        @apply(--layout-horizontal);
-        @apply(--layout-center-center);
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
       }
+
       #clock {
         display: block;
         overflow: visible;
       }
+
       #clock * {
         pointer-events: fill;
       }
+
       #face {
         fill: var(--divider-color);
         cursor: default;
       }
+
       .line {
         stroke-width: 2;
       }
+
       .dot {
         fill: var(--default-primary-color);
       }
+
       .line {
         stroke: var(--default-primary-color);
       }
+
       .clock-hand {
         z-index: 1;
       }
+
       .disc-large {
         z-index: 2;
         fill: var(--default-primary-color);
       }
+
       .disc-small {
         fill: var(--text-primary-color);
       }
+
       .clock-hand.no-dot .disc-small {
         fill: none;
         stroke: none;
       }
+
       .number text {
         z-index: 3;
         fill: var(--primary-text-color);
-        @apply(--paper-font-subhead);
+        @apply --paper-font-subhead;
         pointer-events: none;
         dominant-baseline: middle;
         text-align: center;
         text-anchor: middle;
       }
+
       .number text.clipped {
         z-index: 4;
         fill: var(--text-primary-color);
       }
+
       .select-area {
         cursor: pointer;
         fill-opacity: 0;
@@ -93,12 +107,11 @@
         <circle class="disc-small" r$="{{_selectorDotSize}}" cx$="{{_handX}}" cy$="{{_handY}}"></circle>
       </g>
       <g id="numbers"></g>
-      <path class="select-area" on-tap="_onTouch" on-track="_onTouch"
-        d$="{{_getSelectArea(_radius, _selectorInner, _selectorOuter)}}"></path>
+      <path class="select-area" on-tap="_onTouch" on-track="_onTouch" d$="{{_getSelectArea(_radius, _selectorInner, _selectorOuter)}}"></path>
     </svg>
   </template>
   <script>
-    (function(){
+    (function () {
       var SVG_NS = 'http://www.w3.org/2000/svg';
 
       var RADIANS_PER_DEGREE = Math.PI / 180;
@@ -109,77 +122,88 @@
       var MAX_VISIBLE = 12;
 
       var instanceCount = 0;
-      
-      var normalizeAngle = function(a) {
+
+      var normalizeAngle = function (a) {
         // convert angle to a positive value between 0 and 360
         a = a ? a % 360 : 0;
         return a < 0 ? a + 360 : a;
       };
-      
+
       function getShortestAngle(from, to) {
         var angle, offset = 0;
         from = from || 0;
         angle = normalizeAngle(from);
-        if ( angle < 180 && (to > (angle + 180)) ) {
-          offset = -360; 
+        if (angle < 180 && (to > (angle + 180))) {
+          offset = -360;
         }
-        if ( angle >= 180 && (to <= (angle - 180)) ) {
-          offset = 360; 
+        if (angle >= 180 && (to <= (angle - 180))) {
+          offset = 360;
         }
         return from + offset + (to - angle);
       }
 
-      Polymer({
-        is: 'paper-clock-selector',
-        properties: {
-          selected: {
-            type: Number,
-            notify: true,
-            value: 0,
-            observer: '_selectedChanged'
-          },
-          count: {
-            type: Number,
-            value: 0
-          },
-          step: {
-            type: Number,
-            value: 1,
-            observer: '_stepChanged'
-          },
-          useZero: {
-            type: Boolean,
-            value: false
-          },
-          zeroPad: {
-            type: Boolean,
-            value: false
-          },
-          animated: {
-            type: Boolean,
-            value: false
+      class PaperClockSelector extends Polymer.Element {
+        static get is() { return 'paper-clock-selector'; }
+        static get properties() {
+          return {
+            selected: {
+              type: Number,
+              notify: true,
+              value: 0,
+              observer: '_selectedChanged'
+            },
+            count: {
+              type: Number,
+              value: 0
+            },
+            step: {
+              type: Number,
+              value: 1,
+              observer: '_stepChanged'
+            },
+            useZero: {
+              type: Boolean,
+              value: false
+            },
+            zeroPad: {
+              type: Boolean,
+              value: false
+            },
+            animated: {
+              type: Boolean,
+              value: false
+            }
           }
-        },
-        listeners: {
-          'iron-resize': '_updateSize'
-        },
-        observers: [
-          '_populate(count, step, useZero, _instanceId)',
-          '_zeroPadChanged(zeroPad, _numbers)'
-        ],
-        behaviors: [
-          Polymer.IronResizableBehavior
-        ],
-        ready: function() {
+        }
+        // listeners: {
+        //   'iron-resize': '_updateSize'
+        // },
+        // observers: [
+        //   '_populate(count, step, useZero, _instanceId)',
+        //   '_zeroPadChanged(zeroPad, _numbers)'
+        // ],
+        // behaviors: [
+        //   Polymer.IronResizableBehavior
+        // ],
+
+        static get observers() {
+          return [
+            '_populate(count, step, useZero, _instanceId)',
+            '_zeroPadChanged(zeroPad, _numbers)'
+          ];
+        }
+        ready() {
+          super.ready();
           this._currentAngle = 0;
           this._populate();
           this._selectedChanged(this.selected);
           this._instanceId = instanceCount++;
-        },
-        setClockHand: function(deg, animate, callback) {
+          this.addEventListener('iron-resize', this._updateSize.bind(this));
+        }
+        setClockHand(deg, animate, callback) {
           deg = normalizeAngle(deg);
 
-          animate = typeof(animate) === 'undefined' ? this.animated : animate;
+          animate = typeof (animate) === 'undefined' ? this.animated : animate;
           animate = this._radius ? animate : false;
 
           var current = this._currentAngle;
@@ -189,18 +213,18 @@
           }
 
           if (animate) {
-            this._once('paper-clock-transition-end', function() {
+            this._once('paper-clock-transition-end', function () {
               if (callback) {
                 callback();
               }
             }.bind(this));
           }
 
-          this.async(function() {
+          this.async(function () {
             this._setHandRotation(rotate, animate);
           });
-        },
-        _performRotation : function(angle, animate) {
+        }
+        _performRotation(angle, animate) {
           // If the angle is in transition from a previous animation, cancel it
           if (this._animationFrame) {
             window.cancelAnimationFrame(this._animationFrame);
@@ -211,9 +235,9 @@
           if (animate) {
             var previousAngle = this._currentAngle;
             var angleDifference = angle - previousAngle;
-          
+
             var animationStart = null;
-            var incrementAngle = function(timestamp) {
+            var incrementAngle = function (timestamp) {
               if (!animationStart) {
                 animationStart = timestamp;
               }
@@ -229,7 +253,7 @@
                 this._animationFrame = null;
                 this.fire('paper-clock-transition-end');
               } else {
-                  this._animationFrame = window.requestAnimationFrame(incrementAngle);
+                this._animationFrame = window.requestAnimationFrame(incrementAngle);
               }
             }.bind(this);
 
@@ -240,16 +264,16 @@
             this._currentAngle = angle;
             this._updateHandPositions();
           }
-        },
-        _applyAnimationEasing : function(progress) {
+        }
+        _applyAnimationEasing(progress) {
           return Math.pow(progress, 2);
-        },
-        _setHandRotation: function(deg, animate) {
-          var hasLabel = ((deg / 360) * this.count) % this.step === 0 ;
+        }
+        _setHandRotation(deg, animate) {
+          var hasLabel = ((deg / 360) * this.count) % this.step === 0;
           this.$.clockHand.classList[['remove', 'add'][+hasLabel]]('no-dot');
           this._performRotation(deg, animate);
-        },
-        _selectedChanged: function(selected) {
+        }
+        _selectedChanged(selected) {
           if (!this.count || isNaN(selected)) {
             return;
           }
@@ -265,8 +289,8 @@
           }
           this._vibrate();
           this.setClockHand((360 / this.count) * this.selected);
-        },
-        _stepChanged: function(value, oldValue) {
+        }
+        _stepChanged(value, oldValue) {
           this._step = oldValue;
           if (!this.count || isNaN(value)) {
             return;
@@ -276,8 +300,8 @@
             value = minStep;
           }
           this._step = value;
-        },
-        _populate: function() {
+        }
+        _populate() {
           delete this._resizedCache;
           var display, value, number;
           var $numbers = this.$.numbers;
@@ -286,13 +310,13 @@
           this._stepChanged(this.step);
 
           // remove dom nodes since they'll be re-created
-          while($numbers.firstChild) {
+          while ($numbers.firstChild) {
             $numbers.removeChild($numbers.firstChild);
           }
 
           var numbers = [];
 
-          for (var i=0; i<this.count; i++) {
+          for (var i = 0; i < this.count; i++) {
             value = i;
             display = null;
             if (i === 0 && !this.useZero) {
@@ -315,8 +339,8 @@
           this.set('_numbers', numbers);
           this._positionClockPoints();
           this._updateHandPositions();
-        },
-        _updateNumber: function(number) {
+        }
+        _updateNumber(number) {
           var dom = number.dom;
           if (!dom) {
             return;
@@ -324,19 +348,19 @@
           if (number.x && number.y && dom.text) {
             dom.text.setAttributeNS(null, 'x', number.x);
             dom.text.setAttributeNS(null, 'y', number.y);
-            dom.text.textContent  = this._formatNumber(number.value);
+            dom.text.textContent = this._formatNumber(number.value);
             dom.textClipped.setAttributeNS(null, 'x', number.x);
             dom.textClipped.setAttributeNS(null, 'y', number.y);
             dom.textClipped.textContent = this._formatNumber(number.value);
           }
-        },
-        _createNumberElement: function(number) {
+        }
+        _createNumberElement(number) {
           // We can't use templates inside SVG elements, so we have to create
           // the numbers in dom and set up attribute bindings manually
           function create(type, classList) {
             var el = document.createElementNS(SVG_NS, type);
             if (classList) {
-              classList.forEach(function(c) {
+              classList.forEach(function (c) {
                 el.classList.add(c);
               });
             }
@@ -360,9 +384,9 @@
             g.appendChild(textClipped);
           }
 
-          return {g: g, text: text, textClipped: textClipped};
-        },
-        _updateSize: function() {
+          return { g: g, text: text, textClipped: textClipped };
+        }
+        _updateSize() {
           var radius = Math.min(this.offsetWidth, this.offsetHeight) / 2;
 
           this._radius = radius;
@@ -376,22 +400,22 @@
           this.$.clock.style.height = (radius * 2) + 'px';
           this._updateHandPositions();
 
-          this.async(function() {
+          this.async(function () {
             // FIXME: this is hacky, but for some reason we need to wait a bit
             // to get an accurate measurement
             this._bounds = this.$.face.getBoundingClientRect();
 
             // account for page scrolling
             this._bounds = {
-                top: this._bounds.top + window.pageYOffset,
-                right: this._bounds.right + window.pageXOffset,
-                bottom: this._bounds.bottom + window.pageYOffset,
-                left: this._bounds.left + window.pageXOffset,
-                width: this._bounds.width
+              top: this._bounds.top + window.pageYOffset,
+              right: this._bounds.right + window.pageXOffset,
+              bottom: this._bounds.bottom + window.pageYOffset,
+              left: this._bounds.left + window.pageXOffset,
+              width: this._bounds.width
             }
           }.bind(this), 150);
-        },
-        _positionClockPoints: function() {
+        }
+        _positionClockPoints() {
           if (!this._radius) {
             return;
           }
@@ -404,33 +428,33 @@
           var angle = (360 / this.count) * RADIANS_PER_DEGREE;
 
           var a, number;
-          for (var i=0; i<this.count; i++) {
+          for (var i = 0; i < this.count; i++) {
             a = angle * i;
             number = numbers[i];
             number.x = this._radius + (Math.sin(a) * this._selectorCenter);
             number.y = this._radius - (Math.cos(a) * this._selectorCenter);
             this._updateNumber(number);
           }
-        },
-        _notifyNumberChanged: function(path) {
+        }
+        _notifyNumberChanged(path) {
           var propPath, props = ['x', 'y'];
-          for (var i=0; i<props.length; i++) {
+          for (var i = 0; i < props.length; i++) {
             propPath = path + '.' + props[i];
             if (this.get(propPath)) {
               this.notifyPath(propPath, this.get(propPath));
             }
           }
-        },
-        _getSelectArea: function(radius, outer, inner) {
+        }
+        _getSelectArea(radius, outer, inner) {
           return '\n' +
-            'M ' + (radius - outer) + ' ' + radius + '\n' + 
-            'A ' + outer + ' ' + outer + ' 0 0 0 ' + (radius + outer) + ' ' + radius + '\n' + 
-            'A ' + outer + ' ' + outer + ' 0 0 0 ' + (radius - outer) + ' ' + radius + '\n' + 
-            'M ' + (radius - inner) + ' ' + radius + '\n' + 
-            'A ' + inner + ' ' + inner + ' 0 0 1 ' + (radius + inner) + ' ' + radius + '\n'+ 
+            'M ' + (radius - outer) + ' ' + radius + '\n' +
+            'A ' + outer + ' ' + outer + ' 0 0 0 ' + (radius + outer) + ' ' + radius + '\n' +
+            'A ' + outer + ' ' + outer + ' 0 0 0 ' + (radius - outer) + ' ' + radius + '\n' +
+            'M ' + (radius - inner) + ' ' + radius + '\n' +
+            'A ' + inner + ' ' + inner + ' 0 0 1 ' + (radius + inner) + ' ' + radius + '\n' +
             'A ' + inner + ' ' + inner + ' 0 0 1 ' + (radius - inner) + ' ' + radius;
-        },
-        _onTouch: function(event) {
+        }
+        _onTouch(event) {
           var x = event.detail.x + window.pageXOffset - this._bounds.left - this._radius;
           var y = event.detail.y + window.pageYOffset - this._bounds.top - this._radius;
 
@@ -454,44 +478,44 @@
 
           /* only fire selected when we've tapped or stopped tracking */
           if (event.type === 'tap' || event.detail.state === 'end') {
-            this.fire('paper-clock-selected', {value: this.selected, animated: this.animated});
+            this.fire('paper-clock-selected', { value: this.selected, animated: this.animated });
           }
-        },
-        _formatNumber: function(value) {
+        }
+        _formatNumber(value) {
           if (this.zeroPad) {
             return ('0' + value).substr(-2);
           }
           return value.toString();
-        },
-        _getNumberClass: function(pfx, n, selected) {
+        }
+        _getNumberClass(pfx, n, selected) {
           var cssClass = pfx;
           if (selected.value === n.value) {
             cssClass += ' selected';
           }
           return cssClass;
-        },
-        _vibrate: function() {
-          this.debounce('vibrate', function() {
+        }
+        _vibrate() {
+          this.debounce('vibrate', function () {
             if (navigator.vibrate) {
               navigator.vibrate(10);
             }
           });
-        },
-        _zeroPadChanged: function() {
-          this._numbers.forEach(function(number) {
+        }
+        _zeroPadChanged() {
+          this._numbers.forEach(function (number) {
             this._updateNumber(number);
           }.bind(this));
-        },
-        _once: function(eventName, callback, node) {
+        }
+        _once(eventName, callback, node) {
           node = node || this;
           function onceCallback() {
             node.removeEventListener(eventName, onceCallback);
             callback.apply(null, arguments);
           }
           node.addEventListener(eventName, onceCallback);
-        },
+        }
 
-        _updateHandPositions : function() {
+        _updateHandPositions() {
           if (!this._radius) {
             return;
           }
@@ -499,9 +523,9 @@
           var radians = this._currentAngle * RADIANS_PER_DEGREE;
           this._handX = this._radius + (Math.sin(radians) * this._selectorCenter);
           this._handY = this._radius - (Math.cos(radians) * this._selectorCenter);
-        },
-
-      });
+        }
+      }
+      customElements.define(PaperClockSelector.is, PaperClockSelector);
     })();
   </script>
 </dom-module>
