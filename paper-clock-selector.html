@@ -263,7 +263,6 @@
             this.selected = value;
             return;
           }
-          this._vibrate();
           this.setClockHand((360 / this.count) * this.selected);
         },
         _stepChanged: function(value, oldValue) {
@@ -469,13 +468,6 @@
             cssClass += ' selected';
           }
           return cssClass;
-        },
-        _vibrate: function() {
-          this.debounce('vibrate', function() {
-            if (navigator.vibrate) {
-              navigator.vibrate(10);
-            }
-          });
         },
         _zeroPadChanged: function() {
           this._numbers.forEach(function(number) {
