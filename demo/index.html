@@ -23,8 +23,8 @@
   </custom-style>
 </head>
 <body unresolved>
-  <dom-bind id="scope">
-    <template is="dom-bind">
+  <dom-bind id="bindElement">
+    <template is="dom-bind" id="templateElement">
       <section>
         <h1>{{time}}</h1>
         <paper-button class="btn" on-tap="showDialog" raised>Change Time</paper-button>
@@ -40,7 +40,12 @@
   </dom-bind>
   <script>
     (function() {
-      var scope = document.querySelector('#scope');
+      var scope;
+      if (Polymer.Element) {
+        scope = document.querySelector('#bindElement');
+      } else {
+        scope = document.querySelector('#templateElement');
+      }
       scope.dismissDialog = function(event) {
         if (event.detail.confirmed) {
           scope.time = scope.$.picker.time;
