@@ -20,7 +20,7 @@
     "/tests/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.9 || ^2.0",
+    "polymer": "Polymer/polymer#^1.1 || ^2.0",
     "iron-media-query": "PolymerElements/iron-media-query#^1.0 || ^2.0",
     "iron-selector": "PolymerElements/iron-selector#^1.0 || ^2.0",
     "neon-animation": "PolymerElements/neon-animation#^1.0 || ^2.0",
@@ -56,6 +56,7 @@
         "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
       },
       "resolutions": {
+        "polymer": "^1.1.0",
         "webcomponentsjs": "^0.7.2"
       }
     }
