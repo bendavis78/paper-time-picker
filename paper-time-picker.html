@@ -348,7 +348,7 @@ If you include this element as part of `paper-dialog`, use the class
           Polymer.IronResizableBehavior,
         ],
         observers: [
-          '_updateTime(hour, minute, second)',
+          '_updateTime(hour, minute, second, enableSeconds)',
         ],
         ready: function() {
           this._resizeHandler = this._resizeHandler.bind(this);
@@ -382,14 +382,14 @@ If you include this element as part of `paper-dialog`, use the class
           }
           this.rawValue = rawValue;
         },
-        _updateTime: function(hour, minute, second) {
+        _updateTime: function(hour, minute, second, enableSeconds) {
           if (hour === undefined || minute === undefined ||
-            (this.enableSeconds && second === undefined)) {
+            (enableSeconds && second === undefined)) {
             this.rawValue = 0;
             return;
           }
           var rawValue = (hour * 60) + minute;
-          if (this.enableSeconds) {
+          if (enableSeconds) {
             rawValue = (rawValue * 60) + second;
           }
           this.rawValue = rawValue;
