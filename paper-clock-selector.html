@@ -16,7 +16,7 @@
 
       :host {
         display: block;
-        @apply(--paper-font-body1);
+        @apply --paper-font-body1;
         -webkit-touch-callout: none;
         -webkit-user-select: none;
         -khtml-user-select: none;
@@ -24,8 +24,8 @@
         -ms-user-select: none;
         user-select: none;
         pointer-events: none;
-        @apply(--layout-horizontal);
-        @apply(--layout-center-center);
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
       }
       #clock {
         display: block;
@@ -64,7 +64,7 @@
       .number text {
         z-index: 3;
         fill: var(--primary-text-color);
-        @apply(--paper-font-subhead);
+        @apply --paper-font-subhead;
         pointer-events: none;
         dominant-baseline: middle;
         text-align: center;
@@ -109,22 +109,22 @@
       var MAX_VISIBLE = 12;
 
       var instanceCount = 0;
-      
+
       var normalizeAngle = function(a) {
         // convert angle to a positive value between 0 and 360
         a = a ? a % 360 : 0;
         return a < 0 ? a + 360 : a;
       };
-      
+
       function getShortestAngle(from, to) {
         var angle, offset = 0;
         from = from || 0;
         angle = normalizeAngle(from);
         if ( angle < 180 && (to > (angle + 180)) ) {
-          offset = -360; 
+          offset = -360;
         }
         if ( angle >= 180 && (to <= (angle - 180)) ) {
-          offset = 360; 
+          offset = 360;
         }
         return from + offset + (to - angle);
       }
@@ -136,45 +136,49 @@
             type: Number,
             notify: true,
             value: 0,
-            observer: '_selectedChanged'
+            observer: '_selectedChanged',
           },
           count: {
             type: Number,
-            value: 0
+            value: 0,
           },
           step: {
             type: Number,
             value: 1,
-            observer: '_stepChanged'
+            observer: '_stepChanged',
           },
           useZero: {
             type: Boolean,
-            value: false
+            value: false,
           },
           zeroPad: {
             type: Boolean,
-            value: false
+            value: false,
           },
           animated: {
             type: Boolean,
-            value: false
-          }
-        },
-        listeners: {
-          'iron-resize': '_updateSize'
+            value: false,
+          },
         },
         observers: [
           '_populate(count, step, useZero, _instanceId)',
-          '_zeroPadChanged(zeroPad, _numbers)'
+          '_zeroPadChanged(zeroPad, _numbers)',
         ],
         behaviors: [
-          Polymer.IronResizableBehavior
+          Polymer.IronResizableBehavior,
         ],
         ready: function() {
+          this._updateSize = this._updateSize.bind(this);
           this._currentAngle = 0;
           this._populate();
           this._selectedChanged(this.selected);
           this._instanceId = instanceCount++;
+        },
+        attached: function() {
+          this.addEventListener('iron-resize', this._updateSize);
+        },
+        detached: function() {
+          this.removeEventListener('iron-resize', this._updateSize);
         },
         setClockHand: function(deg, animate, callback) {
           deg = normalizeAngle(deg);
@@ -206,12 +210,12 @@
             window.cancelAnimationFrame(this._animationFrame);
           }
 
-          // If the transition is animated, create an animation loop that will 
+          // If the transition is animated, create an animation loop that will
           // gradually increment towards the new angle while refreshing the hand positions
           if (animate) {
             var previousAngle = this._currentAngle;
             var angleDifference = angle - previousAngle;
-          
+
             var animationStart = null;
             var incrementAngle = function(timestamp) {
               if (!animationStart) {
@@ -227,9 +231,12 @@
               // If the animation hasn't completed, request animation of the next frame
               if (animationProgress === 1) {
                 this._animationFrame = null;
-                this.fire('paper-clock-transition-end');
+                this.dispatchEvent(new CustomEvent('paper-clock-transition-end', {
+                  bubbles: true,
+                  composed: true,
+                }));
               } else {
-                  this._animationFrame = window.requestAnimationFrame(incrementAngle);
+                this._animationFrame = window.requestAnimationFrame(incrementAngle);
               }
             }.bind(this);
 
@@ -277,43 +284,45 @@
           this._step = value;
         },
         _populate: function() {
-          delete this._resizedCache;
-          var display, value, number;
-          var $numbers = this.$.numbers;
+          this.debounce('_populate', function() {
+            delete this._resizedCache;
+            var display, value, number;
+            var $numbers = this.$.numbers;
 
-          this.set('_numbers', []);
-          this._stepChanged(this.step);
+            this.set('_numbers', []);
+            this._stepChanged(this.step);
 
-          // remove dom nodes since they'll be re-created
-          while($numbers.firstChild) {
-            $numbers.removeChild($numbers.firstChild);
-          }
-
-          var numbers = [];
-
-          for (var i=0; i<this.count; i++) {
-            value = i;
-            display = null;
-            if (i === 0 && !this.useZero) {
-              value = this.count;
+            // remove dom nodes since they'll be re-created
+            while($numbers.firstChild) {
+              $numbers.removeChild($numbers.firstChild);
             }
 
-            number = {
-              index: i,
-              value: value,
-              display: value % this._step === 0,
-              x: 0,
-              y: 0,
-              label: this._formatNumber(value)
-            };
+            const numbers = [];
 
-            number.dom = this._createNumberElement(number);
-            numbers.push(number);
-            $numbers.appendChild(number.dom.g);
-          }
-          this.set('_numbers', numbers);
-          this._positionClockPoints();
-          this._updateHandPositions();
+            for (let i = 0; i<this.count; i++) {
+              value = i;
+              display = null;
+              if (i === 0 && !this.useZero) {
+                value = this.count;
+              }
+
+              number = {
+                index: i,
+                value: value,
+                display: value % this._step === 0,
+                x: 0,
+                y: 0,
+                label: this._formatNumber(value),
+              };
+
+              number.dom = this._createNumberElement(number);
+              numbers.push(number);
+              $numbers.appendChild(number.dom.g);
+            }
+            this.set('_numbers', numbers);
+            this._positionClockPoints();
+            this._updateHandPositions();
+          });
         },
         _updateNumber: function(number) {
           var dom = number.dom;
@@ -421,12 +430,16 @@
           }
         },
         _getSelectArea: function(radius, outer, inner) {
+          // Default these values to avoid failure in Polymer 2.x
+          radius = radius || 1;
+          outer = outer || 1;
+          inner = inner || 1;
           return '\n' +
-            'M ' + (radius - outer) + ' ' + radius + '\n' + 
-            'A ' + outer + ' ' + outer + ' 0 0 0 ' + (radius + outer) + ' ' + radius + '\n' + 
-            'A ' + outer + ' ' + outer + ' 0 0 0 ' + (radius - outer) + ' ' + radius + '\n' + 
-            'M ' + (radius - inner) + ' ' + radius + '\n' + 
-            'A ' + inner + ' ' + inner + ' 0 0 1 ' + (radius + inner) + ' ' + radius + '\n'+ 
+            'M ' + (radius - outer) + ' ' + radius + '\n' +
+            'A ' + outer + ' ' + outer + ' 0 0 0 ' + (radius + outer) + ' ' + radius + '\n' +
+            'A ' + outer + ' ' + outer + ' 0 0 0 ' + (radius - outer) + ' ' + radius + '\n' +
+            'M ' + (radius - inner) + ' ' + radius + '\n' +
+            'A ' + inner + ' ' + inner + ' 0 0 1 ' + (radius + inner) + ' ' + radius + '\n'+
             'A ' + inner + ' ' + inner + ' 0 0 1 ' + (radius - inner) + ' ' + radius;
         },
         _onTouch: function(event) {
@@ -453,7 +466,14 @@
 
           /* only fire selected when we've tapped or stopped tracking */
           if (event.type === 'tap' || event.detail.state === 'end') {
-            this.fire('paper-clock-selected', {value: this.selected, animated: this.animated});
+            this.dispatchEvent(new CustomEvent('paper-clock-selected', {
+              detail: {
+                value: this.selected,
+                animated: this.animated,
+              },
+              bubbles: true,
+              composed: true,
+            }));
           }
         },
         _formatNumber: function(value) {
@@ -470,7 +490,7 @@
           return cssClass;
         },
         _zeroPadChanged: function() {
-          this._numbers.forEach(function(number) {
+          (this._numbers || []).forEach(function(number) {
             this._updateNumber(number);
           }.bind(this));
         },
