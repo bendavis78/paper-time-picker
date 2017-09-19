@@ -384,6 +384,7 @@ If you include this element as part of `paper-dialog`, use the class
         },
         _updateTime: function(hour, minute, second, enableSeconds) {
           if (hour === undefined || minute === undefined ||
+            enableSeconds === undefined ||
             (enableSeconds && second === undefined)) {
             this.rawValue = 0;
             return;
