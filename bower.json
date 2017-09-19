@@ -56,13 +56,11 @@
         "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
       },
       "resolutions": {
-        "polymer": "^1.9",
         "webcomponentsjs": "^0.7.2"
       }
     }
   },
   "resolutions": {
-    "polymer": "^2.0",
     "webcomponentsjs": "^1.0.0"
   }
 }
