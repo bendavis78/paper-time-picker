@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-media-query/iron-media-query.html">
+<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../iron-selector/iron-selector.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
@@ -126,7 +127,9 @@ If you include this element as part of `paper-dialog`, use the class
 
       /** Heading ********************/
       #heading {
-        box-sizing: border-box;
+        border-style:solid;
+        border-color: white;
+        border-width: 20px 1px 60px 20px;
         color: var(--light-primary-color); 
         background: var(--default-primary-color);
         @apply(--layout-vertical);
@@ -176,18 +179,33 @@ If you include this element as part of `paper-dialog`, use the class
       .clock-animatable{
         @apply(--layout-fit);
       }
+      /** Digital time Display *************/
+      #timePrint 
+      {
+       background: white;
+       width:50px;
+       height:50px;
+       font-size: 100px;
+       color:white;
+       }
     </style>
     <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" 
       query-matches="{{_queryMatches}}"></iron-media-query>
     <div id="timePicker">
       <div id="heading">
         <iron-selector class="time" selectable="[name]" attr-for-selected="name" selected="{{view}}">
-          <div name="hours" class="hour">{{hour12}}</div>
+          <div name="hours" class="hour">
+            <paper-input allowedPattern="^([0-9]|[0-1][0-2])$" value="{{hour12}}"></paper-input>
+          </div>
           <div class="sep">:</div>
-          <div name="minutes" class="minute">{{_zeroPad(minute, 2)}}</div>
+          <div name="minutes" class="minute">
+            <paper-input allowedPattern="^([0-9]|[0-5][0-9])$" value="{{minute}}"></paper-input>
+          </div>
           <template is="dom-if" if="[[ enableSeconds ]]">
             <div class="sep">:</div>
-            <div name="seconds" class="second">{{_zeroPad(second, 2)}}</div>
+            <div name="seconds" class="second">
+              <paper-input allowedPattern="^([0-9]|[0-5][0-9])$" value="{{second}}"></paper-input>
+            </div>
           </template>
         </iron-selector>
         <iron-selector class="period" attr-for-selected="name" selected="{{period}}">
@@ -205,12 +223,12 @@ If you include this element as part of `paper-dialog`, use the class
             </neon-animatable>
             <neon-animatable class="clock-animatable" name="minutes">
               <paper-clock-selector class="clock" id="minuteClock" count="60" step="5"
-                animated="[[animated]]" use-zero zero-pad selected="{{minute}}"></paper-clock-selector> 
+                animated="[[animated]]" use-zero zero-pad selected="{{minute0}}"></paper-clock-selector> 
             </neon-animatable>
             <template is="dom-if" if="[[ enableSeconds ]]">
               <neon-animatable class="clock-animatable" name="seconds">
                 <paper-clock-selector class="clock" id="secondClock" count="60" step="5"
-                  animated="[[animated]]" use-zero zero-pad selected="{{second}}"></paper-clock-selector> 
+                  animated="[[animated]]" use-zero zero-pad selected="{{second0}}"></paper-clock-selector> 
               </neon-animatable>
             </template>
           </neon-animated-pages>
@@ -274,6 +292,14 @@ If you include this element as part of `paper-dialog`, use the class
             value: 0
           },
           /**
+           * The current minute zeroPaded (00-59)
+           */
+          minute0: {
+            type: Number,
+            notify: true,
+            computed: '_zeroPad(minute, 2)'
+           },
+           /**
            * The current second (0-59)
            */
            second: {
@@ -282,6 +308,14 @@ If you include this element as part of `paper-dialog`, use the class
             observer: '_secondChanged',
             value: 0
           },
+          /**
+           * The current second zeroPaded
+           */
+          second0: {
+            type: Number,
+            notify: true,
+            computed: '_zeroPad(second, 2)'
+            },
           /**
            * The current period ('AM', 'PM')
            */
@@ -334,7 +368,7 @@ If you include this element as part of `paper-dialog`, use the class
           },
           enableSeconds: {
             type: Boolean,
-            value: false
+            value: true
           },
           _queryMatches: {
             type: Boolean,
