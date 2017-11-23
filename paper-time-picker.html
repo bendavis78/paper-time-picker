@@ -102,17 +102,19 @@ If you include this element as part of `paper-dialog`, use the class
         height: 96px;
         padding: 0 48px;
         @apply(--layout-horizontal);
-        @apply(--layout-end-justified);
+        /*@apply(--layout-end-justified); */
       }
       :host([enable-seconds][narrow]) #heading {
         padding: 0 16px;
       }
       :host([narrow]) #heading .time {
         margin-top: 6px;
+
         @apply(--paper-font-display3);
       }
       :host([narrow]) #timePicker #heading .time {
         font-size: 60px;
+        height:20px;
         letter-spacing: .1ex !important;
       }
       :host([narrow]) #heading .period {
@@ -123,6 +125,7 @@ If you include this element as part of `paper-dialog`, use the class
         /* padding: 30px 20px 10px 20px; */
         padding: 16px;
         @apply(--paper-time-picker-clock);
+        @apply(--paper-time-picker-input);
       }
 
       /** Heading ********************/
@@ -130,19 +133,18 @@ If you include this element as part of `paper-dialog`, use the class
         color: var(--light-primary-color); 
         background: var(--default-primary-color);
         @apply(--layout-vertical);
-        @apply(--layout-center-center);
+        @apply(--layout-center);
       }
-      #heading > iron-selector {
-        margin-top: 10px;
-      }
+      
       #heading .time {
         @apply(--paper-font-display2);
         @apply(--layout-horizontal);
-        @apply(--layout-end-justified);
-        width: 5.34ex;
+        /*@apply(--layout-center-justified);*/
+        margin-top: 1.5ex;
+        height: 55px;
         letter-spacing: .13ex !important;
-      }
-      :host([enable-seconds]) #heading .time{
+       }
+       :host([enable-seconds]) #heading .time{
         width: 8.5ex;
         font-size: 40px;
       }
@@ -177,37 +179,78 @@ If you include this element as part of `paper-dialog`, use the class
         @apply(--layout-fit);
       }
       /** Digital time Display *************/
-      #timePrint 
-      {
-       background: white;
-       width:50px;
-       height:50px;
-       font-size: 100px;
-       color:white;
+        .meridian{
+        font-size:35px;
+        font-color:var(--light-primary-color);
+        line-height: 50px;
+        font-weight: 900; 
        }
-    </style>
+      #input .style-scope.paper-input
+      {
+      width:100px;  
+      } 
+      #title {
+        --paper-input-container: {
+           padding: 0;
+        };
+      --paper-input-container-input: {
+        font-size: 35px;
+        font-weight: 900;
+        color:var(--light-primary-color);
+        };
+      /*--paper-input-container-input-focus: {
+        color:blue;
+         };  */  
+      --paper-input-container-focus-color: {
+        color:white; 
+        };
+      --paper-input-container-underline-focus: {
+        background-color: var(--light-primary-color);
+        /*color: var(--light-primary-color);*/
+        };
+      --paper-input-container-underline: {
+        display:none;
+         };
+       }
+      paper-input:hover /deep/ .style-scope.paper-input {
+        color:white!important;
+         }
+     
+      #test{
+      background-color:white;
+      height:auto;
+      }
+      #colon
+      {
+      font-size:30px;
+      }
+      #timeinput{
+      }
+      #seperator1{
+       height:11px;
+      }
+      #seperator2{
+       height:10px;
+      }
+      </style>
     <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" 
       query-matches="{{_queryMatches}}"></iron-media-query>
     <div id="timePicker">
       <div id="heading">
         <iron-selector class="time" selectable="[name]" attr-for-selected="name" selected="{{view}}">
-          <div name="hours" class="hour">
-            <paper-input allowedPattern="^([0-9]|[0-1][0-2])$" value="{{hour12text}}" type="hour"></paper-input>
-          </div>
+          <paper-input id="title" name="hours" class="flex hour" no-label-float allowedPattern="^([0-9]|[0-1][0-2])$" value="{{hour12text}}" type="hour"></paper-input>
+          <div class="sep" id="temp">:</div>
+          <paper-input id="title" name="minutes" class="flex minute" no-label-float allowedPattern="^([0-9]|[0-5][0-9])$" value="{{minutetext}}" type="minute"></paper-input>
+          <!--<template is="dom-if" if="[[ enableSeconds ]]">-->
           <div class="sep">:</div>
-          <div name="minutes" class="minute">
-            <paper-input allowedPattern="^([0-9]|[0-5][0-9])$" value="{{minutetext}}" type="minute"></paper-input>
-          </div>
-          <template is="dom-if" if="[[ enableSeconds ]]">
-            <div class="sep">:</div>
-            <div name="seconds" class="second">
-              <paper-input allowedPattern="^([0-9]|[0-5][0-9])$" value="{{secondtext}}" type="second"></paper-input>
-            </div>
-          </template>
+          <paper-input name="seconds" class="flex second" id="title" no-label-float allowedPattern="^([0-9]|[0-5][0-9])$" value="{{secondtext}}" type="second"></paper-input>
+          <!--</template>-->
         </iron-selector>
+        <div id="seperator1"></div>
         <iron-selector class="period" attr-for-selected="name" selected="{{period}}">
-          <div name="AM">AM</div>
-          <div name="PM">PM</div>
+          <div name="AM" class="meridian">AM</div>
+          <div id="seperator2"></div>
+          <div name="PM" class="meridian">PM</div>
         </iron-selector>
       </div>
       <div id="clockArea">
@@ -222,12 +265,12 @@ If you include this element as part of `paper-dialog`, use the class
               <paper-clock-selector class="clock" id="minuteClock" count="60" step="5"
                 animated="[[animated]]" use-zero zero-pad selected="{{minute}}"></paper-clock-selector> 
             </neon-animatable>
-            <template is="dom-if" if="[[ enableSeconds ]]">
+            <!--<template is="dom-if" if="[[ enableSeconds ]]">-->
               <neon-animatable class="clock-animatable" name="seconds">
                 <paper-clock-selector class="clock" id="secondClock" count="60" step="5"
                   animated="[[animated]]" use-zero zero-pad selected="{{second}}"></paper-clock-selector> 
               </neon-animatable>
-            </template>
+            <!--</template>-->
           </neon-animated-pages>
         </div>
       </div>
@@ -373,7 +416,7 @@ If you include this element as part of `paper-dialog`, use the class
           },
           enableSeconds: {
             type: Boolean,
-            value: true
+            value: false
           },
           _queryMatches: {
             type: Boolean,
