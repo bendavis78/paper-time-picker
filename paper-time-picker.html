@@ -179,31 +179,34 @@ If you include this element as part of `paper-dialog`, use the class
         @apply(--layout-fit);
       }
       /** Digital time Display ***********/
-        .meridian{
+      .meridian{
         font-size:35px;
         font-color:var(--light-primary-color);
         line-height: 50px;
-        font-weight: 900; 
+        font-weight: bold; 
+        margin-top: 14px;
+      }
+   
+       .seperator{
+        font-size:30px;
+        font-color:var(--light-primary-color);
+        font-weight:bold;
        }
-      #input .style-scope.paper-input
-      {
-      width:100px;  
-      } 
-      #title {
+
+       paper-input {
         --paper-input-container: {
            padding: 0;
+        };
+        --paper-input-container-focus-color: white;
+        --paper-input-container-input-focus: {
+          color: white;
         };
       --paper-input-container-input: {
         font-size: 35px;
         font-weight: 900;
         color:var(--light-primary-color);
         };
-      /*--paper-input-container-input-focus: {
-        color:blue;
-         };  */  
-      --paper-input-container-focus-color: {
-        color:white; 
-        };
+
       --paper-input-container-underline-focus: {
         background-color: var(--light-primary-color);
         /*color: var(--light-primary-color);*/
@@ -212,44 +215,28 @@ If you include this element as part of `paper-dialog`, use the class
         display:none;
          };
        }
-      paper-input:hover /deep/ .style-scope.paper-input {
-        color:white!important;
-         }
-     
-      #test{
-      background-color:white;
-      height:auto;
+      paper-input[focused] {
+        --paper-input-container-color: white;
+        
       }
-      #colon
-      {
-      font-size:30px;
-      }
-      #timeinput{
-      }
-      #seperator1{
-       height:11px;
-      }
-      #seperator2{
-       height:10px;
-      }
-      </style>
+       
+    </style>
     <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" 
       query-matches="{{_queryMatches}}"></iron-media-query>
     <div id="timePicker">
       <div id="heading">
         <iron-selector class="time" selectable="[name]" attr-for-selected="name" selected="{{view}}">
-          <paper-input id="title" name="hours" class="flex hour" no-label-float allowedPattern="^([0-9]|[0-1][0-2])$" value="{{hour12text}}" type="hour"></paper-input>
-          <div class="sep" id="temp">:</div>
-          <paper-input id="title" name="minutes" class="flex minute" no-label-float allowedPattern="^([0-9]|[0-5][0-9])$" value="{{minutetext}}" type="minute"></paper-input>
+          <paper-input name="hours" class="flex hour" no-label-float allowedPattern="^([0-9]|[0-1][0-2])$" value="{{hour12text}}" type="hour"></paper-input>
+          <div class="seperator">:</div>
+          <paper-input  name="minutes" class="flex minute" no-label-float allowedPattern="^([0-9]|[0-5][0-9])$" value="{{minutetext}}" type="minute"></paper-input>
           <!--<template is="dom-if" if="[[ enableSeconds ]]">-->
-          <div class="sep">:</div>
+          <div class="seperator">:</div>
           <paper-input name="seconds" class="flex second" id="title" no-label-float allowedPattern="^([0-9]|[0-5][0-9])$" value="{{secondtext}}" type="second"></paper-input>
           <!--</template>-->
         </iron-selector>
-        <div id="seperator1"></div>
         <iron-selector class="period" attr-for-selected="name" selected="{{period}}">
           <div name="AM" class="meridian">AM</div>
-          <div id="seperator2"></div>
+          
           <div name="PM" class="meridian">PM</div>
         </iron-selector>
       </div>
@@ -513,14 +500,11 @@ If you include this element as part of `paper-dialog`, use the class
         _hour12Changed: function(hour12) {
           var add = (this.period === 'PM' ? 12 : 0);
           this.hour = ((hour12 % 12) + add) % 24;
-          if(hour12<10)
-          {
+          if (hour12 < 10) {
             this.set('hour12text','0'+hour12)
-          }
-          else
-          {
+          } else {
           this.set('hour12text', hour12.toString());
-        }
+         }
         },
         _hour12textchanged: function(hour12text)
         {
