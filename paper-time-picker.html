@@ -142,7 +142,7 @@ If you include this element as part of `paper-dialog`, use the class
         /*@apply(--layout-center-justified);*/
         margin-top: 1.5ex;
         height: 55px;
-        letter-spacing: .13ex !important;
+        letter-spacing: .2ex !important;
        }
        :host([enable-seconds]) #heading .time{
         width: 8.5ex;
@@ -187,37 +187,42 @@ If you include this element as part of `paper-dialog`, use the class
         margin-top: 14px;
       }
    
-       .seperator{
+      .seperator{
         font-size:30px;
         font-color:var(--light-primary-color);
         font-weight:bold;
        }
 
-       paper-input {
+      paper-input {
+        /*--paper-input-container: {
+          border: none;
+          padding: 15px 20px;
+        };*/
         --paper-input-container: {
+           border:none;
            padding: 0;
         };
-        --paper-input-container-focus-color: white;
+        --paper-input-container-focus-color: var(--light-primary-color);  /*color of underline on focus*/
         --paper-input-container-input-focus: {
           color: white;
         };
-      --paper-input-container-input: {
-        font-size: 35px;
-        font-weight: 900;
-        color:var(--light-primary-color);
+        --paper-input-container-input: {
+          font-size: 35px;
+          font-weight: 900;
+          color:var(--light-primary-color);       /*  color of paper time input*/
+          line-height: 10px; !important
         };
 
-      --paper-input-container-underline-focus: {
+        /*--paper-input-container-underline-focus: {
         background-color: var(--light-primary-color);
-        /*color: var(--light-primary-color);*/
+        };*/
+        --paper-input-container-underline: {
+          display:none;
+         /* position:relative;*/
         };
-      --paper-input-container-underline: {
-        display:none;
-         };
-       }
+      }
       paper-input[focused] {
-        --paper-input-container-color: white;
-        
+        --paper-input-container-color: red;
       }
        
     </style>
@@ -506,39 +511,35 @@ If you include this element as part of `paper-dialog`, use the class
           this.set('hour12text', hour12.toString());
          }
         },
-        _hour12textchanged: function(hour12text)
-        {
-          var text=hour12text.substr(1,0);
-          if(text==='0'){
-            hour12text=hour12text.substr(1,1);
-          }
-
-        if(this.hour12.toString!==hour12text) {
-          this.set('hour12',parseInt(hour12text))
-        }
+        _hour12textchanged: function(hour12text) {
+           var text=hour12text.substr(1,0);
+           if(text === '0'){
+             hour12text = hour12text.substr(1,1);
+           }
+           if(this.hour12.toString !== hour12text) {
+             this.set('hour12',parseInt(hour12text))
+           }
         },
-         _minutetextchanged: function(minutetext)
-        {
+        _minutetextchanged: function(minutetext) {
           var text1=minutetext.substr(1,0);
-          if(text1==='0'){
+          if(text1 === '0') {
             minutetext=minutetext.substr(1,1);
           }
-
-        if(this.minute.toString!==minutetext) {
-          this.set('minute',parseInt(minutetext))
-        }
+          if(this.minute.toString !== minutetext) {
+            this.set('minute',parseInt(minutetext))
+          }
         },
-         _secondtextchanged: function(secondtext)
-        {
+        
+        _secondtextchanged: function(secondtext) {
           var text1=secondtext.substr(1,0);
-          if(text1==='0'){
+          if(text1 === '0'){
             secondtext=secondtext.substr(1,1);
           }
-
-        if(this.second.toString!==secondtext) {
-          this.set('second',parseInt(secondtext))
-        }
+          if(this.second.toString !== secondtext) {
+            this.set('second',parseInt(secondtext))
+          }
         },
+        
         _hourChanged: function(hour, oldValue) {
           hour = parseInt(hour);
           if (isNaN(hour) && !hour) {
