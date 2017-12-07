@@ -498,8 +498,6 @@ If you include this element as part of `paper-dialog`, use the class
           this.time = this.formatTime(this.hour, this.minute, this.second);
         },
         _hour12Changed: function(hour12) {
-          var add = (this.period === 'PM' ? 12 : 0);
-          this.hour = ((hour12 % 12) + add) % 24;
           if (hour12 < 10) {
             this.set('hour12text','0' + hour12);
           } else {
@@ -521,7 +519,6 @@ If you include this element as part of `paper-dialog`, use the class
           else if(minutetext.length === 1) {
             this.set('minutetext','0'+ this.minute.toString())
           }
-
         },
         
         _secondtextchanged: function(secondtext) {
@@ -549,24 +546,19 @@ If you include this element as part of `paper-dialog`, use the class
           this.period = ['PM', 'AM'][+(hour < 12)];
         },
         _minuteChanged: function(minute) {
-          if(minute<10)
-          {
+          if (minute < 10) {
             this.set('minutetext','0'+minute.toString())
-          }
-          else
-          {
+          } else {
           this.set('minutetext', minute.toString());
-        }
-          },
+          }
+        },
         _secondChanged: function(second) {
-          if(second<10)
-          {
+          if(second < 10) {
             this.set('secondtext','0'+second.toString())
           }
-          else
-          {
+          else {
           this.set('secondtext', second.toString());
-        }
+          }
         },
         _periodChanged: function(period) {
           if (isNaN(parseInt(this.hour)) || isNaN(parseInt(this.minute))) {
