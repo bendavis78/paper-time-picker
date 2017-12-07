@@ -178,7 +178,7 @@ If you include this element as part of `paper-dialog`, use the class
       /** Digital time Display ***********/
       .meridian {
         font-size:35px;
-        font-color:var(--light-primary-color);
+        color:var(--light-primary-color);
         line-height: 50px;
         font-weight: bold; 
         margin-top: 14px;
@@ -215,11 +215,7 @@ If you include this element as part of `paper-dialog`, use the class
           display: none;
         };
       }
-      paper-input[focused] {
-        --paper-input-container-color: red;
-      }
       
-       
     </style>
     <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" 
       query-matches="{{_queryMatches}}"></iron-media-query>
@@ -229,10 +225,10 @@ If you include this element as part of `paper-dialog`, use the class
           <paper-input name="hours" type="number" min="0" max="12" class="hour" no-label-float value="{{hour12text}}" type="hour"></paper-input>
           <div class="separator">:</div>
           <paper-input  name="minutes" type="number" min="0" max="60" class="minute" no-label-float value="{{minutetext}}" type="minute"></paper-input>
-          <!-- <template is="dom-if" if="[[ enableSeconds ]]"> -->
+          <template is="dom-if" if="[[ enableSeconds ]]">
             <div class="separator">:</div>
             <paper-input name="seconds" type="number" min="0" max="60" class="second" id="title" no-label-float value="{{secondtext}}" type="second"></paper-input>
-          <!-- </template> -->
+          </template>
         </iron-selector>
         <iron-selector class="period" attr-for-selected="name" selected="{{period}}">
           <div name="AM" class="meridian">AM</div>
@@ -252,12 +248,12 @@ If you include this element as part of `paper-dialog`, use the class
               <paper-clock-selector class="clock" id="minuteClock" count="60" step="5"
                 animated="[[animated]]" use-zero zero-pad selected="{{minute}}"></paper-clock-selector> 
             </neon-animatable>
-            <!-- <template is="dom-if" if="[[ enableSeconds ]]"> -->
+            <template is="dom-if" if="[[ enableSeconds ]]">
               <neon-animatable class="clock-animatable" name="seconds">
                 <paper-clock-selector class="clock" id="secondClock" count="60" step="5"
                   animated="[[animated]]" use-zero zero-pad selected="{{second}}"></paper-clock-selector> 
               </neon-animatable>
-            <!-- </template> -->
+            </template>
           </neon-animated-pages>
         </div>
       </div>
@@ -498,7 +494,12 @@ If you include this element as part of `paper-dialog`, use the class
           this.time = this.formatTime(this.hour, this.minute, this.second);
         },
         _hour12Changed: function(hour12) {
-          if (hour12 < 10) {
+          var add = (this.period === 'PM' ? 12 : 0);
+          this.hour = ((hour12 % 12) + add) % 24;
+          if(isNaN(hour12)) {
+            this.set('hour12','00');
+          }
+          else if (hour12 < 10) {
             this.set('hour12text','0' + hour12);
           } else {
             this.set('hour12text', hour12.toString());
