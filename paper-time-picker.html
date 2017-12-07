@@ -115,14 +115,12 @@ If you include this element as part of `paper-dialog`, use the class
       :host([narrow]) #timePicker #heading .time {
         font-size: 60px;
         height:20px;
-        letter-spacing: .1ex !important;
       }
       :host([narrow]) #heading .period {
         margin-left: 12px;
         margin-top: 12px;
       }
       :host([narrow]) #clockArea {
-        /* padding: 30px 20px 10px 20px; */
         padding: 16px;
         @apply(--paper-time-picker-clock);
         @apply(--paper-time-picker-input);
@@ -142,9 +140,8 @@ If you include this element as part of `paper-dialog`, use the class
         /*@apply(--layout-center-justified);*/
         margin-top: 1.5ex;
         height: 55px;
-        letter-spacing: .2ex !important;
-       }
-       :host([enable-seconds]) #heading .time{
+      }
+      :host([enable-seconds]) #heading .time{
         width: 8.5ex;
         font-size: 40px;
       }
@@ -179,7 +176,7 @@ If you include this element as part of `paper-dialog`, use the class
         @apply(--layout-fit);
       }
       /** Digital time Display ***********/
-      .meridian{
+      .meridian {
         font-size:35px;
         font-color:var(--light-primary-color);
         line-height: 50px;
@@ -187,17 +184,15 @@ If you include this element as part of `paper-dialog`, use the class
         margin-top: 14px;
       }
    
-      .seperator{
+      .separator{
         font-size:30px;
-        font-color:var(--light-primary-color);
-        font-weight:bold;
-       }
+        color:var(--light-primary-color);
+        font-weight: bold;
+      }
 
       paper-input {
-        /*--paper-input-container: {
-          border: none;
-          padding: 15px 20px;
-        };*/
+        width: 45px;
+        text-align: center;
         --paper-input-container: {
            border:none;
            padding: 0;
@@ -209,21 +204,21 @@ If you include this element as part of `paper-dialog`, use the class
         --paper-input-container-input: {
           font-size: 35px;
           font-weight: 900;
-          color:var(--light-primary-color);       /*  color of paper time input*/
+          color: var(--light-primary-color);       /*  color of paper time input*/
           line-height: 10px; !important
         };
-
-        /*--paper-input-container-underline-focus: {
-        background-color: var(--light-primary-color);
-        };*/
+        --paper-input-container-input-webkit-spinner: {
+          display: none;
+          margin: 0;
+        }
         --paper-input-container-underline: {
-          display:none;
-         /* position:relative;*/
+          display: none;
         };
       }
       paper-input[focused] {
         --paper-input-container-color: red;
       }
+      
        
     </style>
     <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" 
@@ -231,13 +226,13 @@ If you include this element as part of `paper-dialog`, use the class
     <div id="timePicker">
       <div id="heading">
         <iron-selector class="time" selectable="[name]" attr-for-selected="name" selected="{{view}}">
-          <paper-input name="hours" class="flex hour" no-label-float allowedPattern="^([0-9]|[0-1][0-2])$" value="{{hour12text}}" type="hour"></paper-input>
-          <div class="seperator">:</div>
-          <paper-input  name="minutes" class="flex minute" no-label-float allowedPattern="^([0-9]|[0-5][0-9])$" value="{{minutetext}}" type="minute"></paper-input>
-          <!--<template is="dom-if" if="[[ enableSeconds ]]">-->
-          <div class="seperator">:</div>
-          <paper-input name="seconds" class="flex second" id="title" no-label-float allowedPattern="^([0-9]|[0-5][0-9])$" value="{{secondtext}}" type="second"></paper-input>
-          <!--</template>-->
+          <paper-input name="hours" type="number" min="0" max="12" class="hour" no-label-float value="{{hour12text}}" type="hour"></paper-input>
+          <div class="separator">:</div>
+          <paper-input  name="minutes" type="number" min="0" max="60" class="minute" no-label-float value="{{minutetext}}" type="minute"></paper-input>
+          <!-- <template is="dom-if" if="[[ enableSeconds ]]"> -->
+            <div class="separator">:</div>
+            <paper-input name="seconds" type="number" min="0" max="60" class="second" id="title" no-label-float value="{{secondtext}}" type="second"></paper-input>
+          <!-- </template> -->
         </iron-selector>
         <iron-selector class="period" attr-for-selected="name" selected="{{period}}">
           <div name="AM" class="meridian">AM</div>
@@ -257,12 +252,12 @@ If you include this element as part of `paper-dialog`, use the class
               <paper-clock-selector class="clock" id="minuteClock" count="60" step="5"
                 animated="[[animated]]" use-zero zero-pad selected="{{minute}}"></paper-clock-selector> 
             </neon-animatable>
-            <!--<template is="dom-if" if="[[ enableSeconds ]]">-->
+            <!-- <template is="dom-if" if="[[ enableSeconds ]]"> -->
               <neon-animatable class="clock-animatable" name="seconds">
                 <paper-clock-selector class="clock" id="secondClock" count="60" step="5"
                   animated="[[animated]]" use-zero zero-pad selected="{{second}}"></paper-clock-selector> 
               </neon-animatable>
-            <!--</template>-->
+            <!-- </template> -->
           </neon-animated-pages>
         </div>
       </div>
@@ -317,7 +312,7 @@ If you include this element as part of `paper-dialog`, use the class
           /**
            * The current hour in text (0-59)
            */
-           hour12text: {
+          hour12text: {
             type:String,
             notify:true,
             observer: '_hour12textchanged'
@@ -342,7 +337,7 @@ If you include this element as part of `paper-dialog`, use the class
            /**
            * The current second (0-59)
            */
-           second: {
+          second: {
             type: Number,
             notify: true,
             observer: '_secondChanged',
@@ -506,37 +501,35 @@ If you include this element as part of `paper-dialog`, use the class
           var add = (this.period === 'PM' ? 12 : 0);
           this.hour = ((hour12 % 12) + add) % 24;
           if (hour12 < 10) {
-            this.set('hour12text','0'+hour12)
+            this.set('hour12text','0' + hour12);
           } else {
-          this.set('hour12text', hour12.toString());
-         }
+            this.set('hour12text', hour12.toString());
+          }
         },
         _hour12textchanged: function(hour12text) {
-           var text=hour12text.substr(1,0);
-           if(text === '0'){
-             hour12text = hour12text.substr(1,1);
-           }
-           if(this.hour12.toString !== hour12text) {
-             this.set('hour12',parseInt(hour12text))
-           }
+          if(this.hour12 !== parseInt(hour12text)) {
+            this.set('hour12', parseInt(hour12text))
+          }
+           else if(hour12text.length === 1) {
+            this.set('hour12text','0'+ this.hour12.toString())
+          }
         },
         _minutetextchanged: function(minutetext) {
-          var text1=minutetext.substr(1,0);
-          if(text1 === '0') {
-            minutetext=minutetext.substr(1,1);
-          }
-          if(this.minute.toString !== minutetext) {
+          if(this.minute !== parseInt(minutetext)) {
             this.set('minute',parseInt(minutetext))
           }
+          else if(minutetext.length === 1) {
+            this.set('minutetext','0'+ this.minute.toString())
+          }
+
         },
         
         _secondtextchanged: function(secondtext) {
-          var text1=secondtext.substr(1,0);
-          if(text1 === '0'){
-            secondtext=secondtext.substr(1,1);
-          }
-          if(this.second.toString !== secondtext) {
+         if(this.second !== parseInt(secondtext)) {
             this.set('second',parseInt(secondtext))
+          }
+          if (secondtext.length == 1) {
+            this.set('secondtext', '0' + this.second.toString());
           }
         },
         
@@ -556,24 +549,19 @@ If you include this element as part of `paper-dialog`, use the class
           this.period = ['PM', 'AM'][+(hour < 12)];
         },
         _minuteChanged: function(minute) {
-
-          minute = parseFloat(minute) % 60;
-          this.minute = minute;
           if(minute<10)
           {
-            this.set('minutetext','0'+minute)
+            this.set('minutetext','0'+minute.toString())
           }
           else
           {
           this.set('minutetext', minute.toString());
         }
-        },
+          },
         _secondChanged: function(second) {
-          second = parseFloat(second) % 60;
-          this.second = second;
           if(second<10)
           {
-            this.set('secondtext','0'+second)
+            this.set('secondtext','0'+second.toString())
           }
           else
           {
