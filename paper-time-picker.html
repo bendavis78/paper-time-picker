@@ -71,7 +71,7 @@ If you include this element as part of `paper-dialog`, use the class
         font-size: 14px;
       }
 
-      /** Landscape ******************/
+      /** Landscape *****************/
       #timePicker {
         width: 512px;
         height: 304px;
@@ -204,7 +204,7 @@ If you include this element as part of `paper-dialog`, use the class
         --paper-input-container-input: {
           font-size: 35px;
           font-weight: 900;
-          color: var(--light-primary-color);       /*  color of paper time input*/
+          color: var(--light-primary-color);       /*  color of paper time input */
           line-height: 10px; !important
         };
         --paper-input-container-input-webkit-spinner: {
@@ -224,7 +224,7 @@ If you include this element as part of `paper-dialog`, use the class
         <iron-selector class="time" selectable="[name]" attr-for-selected="name" selected="{{view}}">
           <paper-input name="hours" type="number" min="0" max="12" class="hour" no-label-float value="{{hour12text}}" type="hour"></paper-input>
           <div class="separator">:</div>
-          <paper-input  name="minutes" type="number" min="0" max="60" class="minute" no-label-float value="{{minutetext}}" type="minute"></paper-input>
+          <paper-input  name="minutes" type="number" maxlength="2" min="0" max="60" class="minute" no-label-float value="{{minutetext}}" type="minute"></paper-input>
           <template is="dom-if" if="[[ enableSeconds ]]">
             <div class="separator">:</div>
             <paper-input name="seconds" type="number" min="0" max="60" class="second" id="title" no-label-float value="{{secondtext}}" type="second"></paper-input>
@@ -366,7 +366,7 @@ If you include this element as part of `paper-dialog`, use the class
             observer: '_viewChanged'
           },
           /**
-           * Maximum screen width at which the picker uses a vertical layout
+           * Maximum screen width at which the picker uses a vertical layouts
            */
           responsiveWidth: {
             type: String,
@@ -506,7 +506,10 @@ If you include this element as part of `paper-dialog`, use the class
           }
         },
         _hour12textchanged: function(hour12text) {
-          if(this.hour12 !== parseInt(hour12text)) {
+           if((hour12text.substr(0,2) !== '12') && (parseInt(hour12text) > 12)) {
+           this.set('hour12', 12)
+           }
+           else if(this.hour12 !== parseInt(hour12text)) {
             this.set('hour12', parseInt(hour12text))
           }
            else if(hour12text.length === 1) {
@@ -514,22 +517,35 @@ If you include this element as part of `paper-dialog`, use the class
           }
         },
         _minutetextchanged: function(minutetext) {
-          if(this.minute !== parseInt(minutetext)) {
+          if (parseInt(minutetext) > 59) {
+            this.set('minutetext','59') 
+          }
+          else if(this.minute !== parseInt(minutetext)) {
             this.set('minute',parseInt(minutetext))
           }
           else if(minutetext.length === 1) {
             this.set('minutetext','0'+ this.minute.toString())
           }
-        },
+          else if(minutetext.length === 3) {
+            this.set('minutetext', minutetext.substr(1,3))
+          }
+             },
         
         _secondtextchanged: function(secondtext) {
-         if(this.second !== parseInt(secondtext)) {
+          if (parseInt(secondtext) > 59) {
+            this.set('secondtext','59') 
+          }
+          else if(this.second !== parseInt(secondtext)) {
             this.set('second',parseInt(secondtext))
           }
-          if (secondtext.length == 1) {
-            this.set('secondtext', '0' + this.second.toString());
+          else if(secondtext.length === 1) {
+            this.set('secondtext','0'+ this.second.toString())
           }
-        },
+          else if(secondtext.length === 3) {
+            this.set('secondtext','59')
+          }
+            },
+        
         
         _hourChanged: function(hour, oldValue) {
           hour = parseInt(hour);
@@ -547,6 +563,8 @@ If you include this element as part of `paper-dialog`, use the class
           this.period = ['PM', 'AM'][+(hour < 12)];
         },
         _minuteChanged: function(minute) {
+           // minute = parseFloat(minute) % 60;
+           // this.minute = minute;
           if (minute < 10) {
             this.set('minutetext','0'+minute.toString())
           } else {
@@ -554,6 +572,8 @@ If you include this element as part of `paper-dialog`, use the class
           }
         },
         _secondChanged: function(second) {
+          second = parseFloat(second) % 60;
+          this.second = second;
           if(second < 10) {
             this.set('secondtext','0'+second.toString())
           }
