@@ -496,7 +496,7 @@ If you include this element as part of `paper-dialog`, use the class
         _hour12Changed: function(hour12) {
           var add = (this.period === 'PM' ? 12 : 0);
           this.hour = ((hour12 % 12) + add) % 24;
-          if(isNaN(hour12)) {
+          if (isNaN(hour12)) {
             this.set('hour12','00');
           }
           else if (hour12 < 10) {
@@ -506,27 +506,31 @@ If you include this element as part of `paper-dialog`, use the class
           }
         },
         _hour12textchanged: function(hour12text) {
-           if ((hour12text.substr(0,2) !== '12') && (parseInt(hour12text) > 12)) {
-           this.set('hour12', 12)
+          if ((hour12text.substr(0,2) !== '12') && (parseInt(hour12text) > 12)) {  //if user enters a 3rd digit after non 12,113 = 03
+            this.set('hour12text', '12')
            }
-           else if (this.hour12 !== parseInt(hour12text)) {
+          else if (this.hour12 !== parseInt(hour12text)) {    // if hour12text is not equal to hour12(number)
             this.set('hour12', parseInt(hour12text))
           }
-           else if(hour12text.length === 1) {
-            this.set('hour12text','0'+ this.hour12.toString())
+          else if (hour12text.length === 1) {           // if hour12text is single digit,ie 9 changes to 09 
+            this.set('hour12text','0'+ this.hour12.toString()) 
           }
-        },
+          else if (hour12text.length === 3) {       // 0012  or 0009 etc changes to 12
+            this.set('hour12text','12' )
+           }
+          },
+
         _minutetextchanged: function(minutetext) {
-          if (parseInt(minutetext) > 59) {
+          if (parseInt(minutetext) > 59) {  //if user enter minutes > 59
             this.set('minutetext','59') 
           }
-          else if (this.minute !== parseInt(minutetext)) {
+          else if (this.minute !== parseInt(minutetext)) { // to update value of minute(number) 
             this.set('minute',parseInt(minutetext))
           }
-          else if (minutetext.length === 1) {
+          else if (minutetext.length === 1) {  // to change 7 to 07,8 to 08 etc
             this.set('minutetext','0'+ this.minute.toString())
           }
-          else if (minutetext.length === 3) {
+          else if (minutetext.length === 3) { // to change 3 digit minutes <59 like 006 or 9928 to 2 digits        
             this.set('minutetext', minutetext.substr(1,3))
           }
              },
