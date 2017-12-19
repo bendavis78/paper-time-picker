@@ -224,7 +224,7 @@ If you include this element as part of `paper-dialog`, use the class
         <iron-selector class="time" selectable="[name]" attr-for-selected="name" selected="{{view}}">
           <paper-input name="hours" type="number" min="0" max="12" class="hour" no-label-float value="{{hour12text}}" type="hour"></paper-input>
           <div class="separator">:</div>
-          <paper-input  name="minutes" type="number" maxlength="2" min="0" max="60" class="minute" no-label-float value="{{minutetext}}" type="minute"></paper-input>
+          <paper-input  name="minutes" type="number" min="0" max="60" class="minute" no-label-float value="{{minutetext}}" type="minute"></paper-input>
           <template is="dom-if" if="[[ enableSeconds ]]">
             <div class="separator">:</div>
             <paper-input name="seconds" type="number" min="0" max="60" class="second" id="title" no-label-float value="{{secondtext}}" type="second"></paper-input>
@@ -506,7 +506,7 @@ If you include this element as part of `paper-dialog`, use the class
           }
         },
         _hour12textchanged: function(hour12text) {
-           if((hour12text.substr(0,2) !== '12') && (parseInt(hour12text) > 12)) {
+           if ((hour12text.substr(0,2) !== '12') && (parseInt(hour12text) > 12)) {
            this.set('hour12', 12)
            }
            else if(this.hour12 !== parseInt(hour12text)) {
@@ -563,19 +563,15 @@ If you include this element as part of `paper-dialog`, use the class
           this.period = ['PM', 'AM'][+(hour < 12)];
         },
         _minuteChanged: function(minute) {
-           // minute = parseFloat(minute) % 60;
-           // this.minute = minute;
           if (minute < 10) {
-            this.set('minutetext','0'+minute.toString())
+            this.set('minutetext','0'+ minute.toString());
           } else {
           this.set('minutetext', minute.toString());
           }
         },
         _secondChanged: function(second) {
-          second = parseFloat(second) % 60;
-          this.second = second;
           if(second < 10) {
-            this.set('secondtext','0'+second.toString())
+            this.set('secondtext','0'+second.toString());
           }
           else {
           this.set('secondtext', second.toString());
